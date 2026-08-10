@@ -1,0 +1,180 @@
+---
+import { SITE_META } from '@config/site';
+
+interface Props {
+  videoSrc?: string;
+  posterSrc?: string;
+}
+
+const { videoSrc = SITE_META.videoSrc, posterSrc = '/poster-placeholder.jpg' } = Astro.props;
+---
+
+<section id="presentacion" class="hero">
+  <div class="hero__media">
+    {
+      videoSrc ? (
+        <video
+          class="hero__video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster={posterSrc}
+        >
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+      ) : (
+        <div class="hero__video hero__video--fallback" />
+      )
+    }
+    <div class="hero__overlay"></div>
+  </div>
+
+  <img src="/avatar-placeholder.svg" alt="Avatar 8-bit" class="hero__avatar" />
+
+  <div class="wrap hero__content">
+    <p class="eyebrow">Presentación</p>
+    <h1 class="hero__title">{SITE_META.name}</h1>
+    <p class="hero__role">{SITE_META.role}</p>
+  </div>
+
+  <a href="#evidencias" class="hero__scroll" aria-label="Ir a evidencias">
+    <span></span>
+  </a>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+
+  .hero__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero__video--fallback {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 20%, #182131 0%, #0a0e17 70%);
+  }
+
+  .hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(10, 14, 23, 0.55) 0%,
+      rgba(10, 14, 23, 0.35) 40%,
+      rgba(10, 14, 23, 0.92) 100%
+    );
+  }
+
+  .hero__avatar {
+    position: absolute;
+    top: 10%;
+    right: clamp(1.5rem, 8vw, 10rem);
+    width: clamp(140px, 16vw, 280px);  
+    height: auto;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 24px rgba(94, 234, 212, 0.35));
+    animation: float 4.5s ease-in-out infinite;
+    z-index: 2;
+  }
+
+  @media (max-width: 640px) {
+    .hero__avatar {
+      top: 6%;        /* antes: 10% */
+      right: 1.25rem;
+      width: 120px;    /* antes: 52px */
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 1;
+    padding-bottom: clamp(3rem, 8vw, 6rem);
+  }
+
+  .hero__title {
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    line-height: 0.98;
+    margin-block: 0.5rem 0.75rem;
+  }
+
+  .hero__role {
+    font-family: var(--font-mono);
+    font-size: clamp(0.85rem, 1.4vw, 1rem);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .hero__scroll {
+    position: absolute;
+    bottom: 1.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 38px;
+    border: 1.5px solid var(--text-muted);
+    border-radius: 12px;
+    z-index: 1;
+  }
+
+  .hero__scroll span {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    background: var(--accent-cyan);
+    border-radius: 50%;
+    animation: scrollDot 1.8s ease-in-out infinite;
+  }
+
+  @keyframes scrollDot {
+    0% {
+      opacity: 1;
+      top: 6px;
+    }
+    70% {
+      opacity: 0;
+      top: 20px;
+    }
+    100% {
+      opacity: 0;
+      top: 6px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero__avatar {
+      top: 14%;
+      right: 1.25rem;
+      width: 64px;
+    }
+  }
+</style>
