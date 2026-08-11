@@ -22,7 +22,8 @@ export const SITE_META = {
   role: `${info.get("career")} · ${info.get("university")}`,
   pageTitle: `${info.get("name")} — E-portafolio · ${info.get("subject")}`,
   description: `${info.get("title")} — ${info.get("subject")}, ${info.get("career")}.`,
-  videoSrc: undefined as string | undefined,
+  videoSrc:
+    "https://dbportfoliostatics.blob.core.windows.net/containerblobs/presentation.mp4",
 };
 
 export const NAV_LINKS: NavLink[] = [

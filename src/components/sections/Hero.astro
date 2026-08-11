@@ -6,7 +6,7 @@ interface Props {
   posterSrc?: string;
 }
 
-const { videoSrc = SITE_META.videoSrc, posterSrc = '/poster-placeholder.jpg' } = Astro.props;
+const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.blob.core.windows.net/containerblobs/poster-placeholder.jpg' } = Astro.props;
 ---
 
 <section id="presentacion" class="hero">
