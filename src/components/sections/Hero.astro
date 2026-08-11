@@ -14,6 +14,7 @@ const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.b
     {
       videoSrc ? (
         <video
+          id="hero-video"
           class="hero__video"
           autoplay
           muted
@@ -42,6 +43,25 @@ const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.b
   <a href="#evidencias" class="hero__scroll" aria-label="Ir a evidencias">
     <span></span>
   </a>
+
+  <button 
+    id="mute-toggle" 
+    class="hero__mute" 
+    data-muted="true" 
+    aria-label="Activar sonido" 
+    aria-pressed="false"
+  >
+    <img
+      src="https://dbportfoliostatics.blob.core.windows.net/containerblobs/icon-muted.svg"
+      alt="muted icon"
+      class="icon-muted"
+    />
+    <img
+      src="https://dbportfoliostatics.blob.core.windows.net/containerblobs/icon-unmuted.svg"
+      alt="unmuted icon"
+      class="icon-unmuted"
+    />
+  </button>
 </section>
 
 <style>
@@ -96,20 +116,15 @@ const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.b
 
   @media (max-width: 640px) {
     .hero__avatar {
-      top: 6%;        /* antes: 10% */
+      top: 6%;
       right: 1.25rem;
-      width: 120px;    /* antes: 52px */
+      width: 120px;
     }
   }
 
   @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-14px);
-    }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
   }
 
   .hero__content {
@@ -156,25 +171,81 @@ const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.b
   }
 
   @keyframes scrollDot {
-    0% {
-      opacity: 1;
-      top: 6px;
-    }
-    70% {
-      opacity: 0;
-      top: 20px;
-    }
-    100% {
-      opacity: 0;
-      top: 6px;
-    }
+    0% { opacity: 1; top: 6px; }
+    70% { opacity: 0; top: 20px; }
+    100% { opacity: 0; top: 6px; }
   }
 
-  @media (max-width: 640px) {
-    .hero__avatar {
-      top: 14%;
-      right: 1.25rem;
-      width: 64px;
-    }
+  .hero__mute {
+    position: absolute;
+    bottom: 1.75rem;
+    right: clamp(1.25rem, 5vw, 2.5rem);
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(10, 14, 23, 0.6);
+    backdrop-filter: blur(8px);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .hero__mute svg {
+    pointer-events: none;
+  }
+
+  .hero__mute:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  /* Control de visibilidad de iconos según data-muted */
+  .hero__mute[data-muted='true'] .icon-muted {
+    display: block;
+  }
+
+  .hero__mute[data-muted='true'] .icon-unmuted {
+    display: none;
+  }
+
+  .hero__mute[data-muted='false'] .icon-muted {
+    display: none;
+  }
+
+  .hero__mute[data-muted='false'] .icon-unmuted {
+    display: block;
   }
 </style>
+
+<script>
+  function setupMuteToggle() {
+    const video = document.getElementById('hero-video') as HTMLVideoElement | null;
+    const btn = document.getElementById('mute-toggle') as HTMLButtonElement | null;
+
+    if (!btn || !video) return;
+
+    // Evitar añadir múltiples listeners si la función se ejecuta de nuevo
+    btn.onclick = () => {
+      video.muted = !video.muted;
+
+      if (!video.muted) {
+        video.play().catch(() => {});
+      }
+
+      btn.dataset.muted = String(video.muted);
+      btn.setAttribute('aria-pressed', String(!video.muted));
+      btn.setAttribute('aria-label', video.muted ? 'Activar sonido' : 'Silenciar');
+    };
+  }
+
+  // Ejecución directa para carga inicial standard
+  setupMuteToggle();
+
+  // Compatibilidad por si usas ClientRouter / View Transitions en Astro
+  document.addEventListener('astro:page-load', setupMuteToggle);
+</script>
