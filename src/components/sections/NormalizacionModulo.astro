@@ -7,6 +7,12 @@ interface Props {
 }
 
 const { ejercicios = EJERCICIOS_NORMALIZACION } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (path?: string) => {
+  if (!path) return '#';
+  if (path.startsWith('http') || path.startsWith('#')) return path;
+  return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};
 ---
 
 <div class="norm-lista">
@@ -41,7 +47,7 @@ const { ejercicios = EJERCICIOS_NORMALIZACION } = Astro.props;
           )}
 
           <a
-            href={item.excelSrc}
+            href={withBase(item.excelSrc)}
             download={item.excelNombre ?? true}
             class="norm-download"
             aria-label={`Descargar Excel de ${item.titulo}`}

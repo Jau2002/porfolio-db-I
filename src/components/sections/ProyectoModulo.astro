@@ -7,6 +7,12 @@ interface Props {
 }
 
 const { proyecto = PROYECTO_INFO } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (path?: string) => {
+  if (!path) return '#';
+  if (path.startsWith('http') || path.startsWith('#')) return path;
+  return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};
 ---
 
 <div class="proy-modulo">
@@ -36,7 +42,7 @@ const { proyecto = PROYECTO_INFO } = Astro.props;
                   <p class="proy-doc-item__desc">{doc.descripcion}</p>
                 </div>
                 <a
-                  href={doc.src}
+                  href={withBase(doc.src)}
                   download
                   class="proy-doc-item__btn"
                   aria-label={`Descargar ${doc.titulo}`}
@@ -65,9 +71,9 @@ const { proyecto = PROYECTO_INFO } = Astro.props;
             {proyecto.imagenes.map((img) => (
               <figure class="proy-figure">
                 <div class="proy-figure__canvas">
-                  <img src={img.src} alt={img.titulo} loading="lazy" />
+                  <img src={withBase(img.src)} alt={img.titulo} loading="lazy" />
                   <a
-                    href={img.src}
+                    href={withBase(img.src)}
                     download
                     class="proy-figure__download"
                     title="Descargar imagen"

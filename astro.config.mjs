@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://Jau2002.github.io",
+  base: process.env.GITHUB_ACTIONS ? "/porfolio-db-I" : "/",
   vite: {
     resolve: {
       alias: {

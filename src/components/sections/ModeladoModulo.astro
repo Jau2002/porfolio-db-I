@@ -7,6 +7,12 @@ interface Props {
 }
 
 const { diagramas = DIAGRAMAS_MODELADO } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (path?: string) => {
+  if (!path) return '';
+  if (path.startsWith('http') || path.startsWith('#')) return path;
+  return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};
 ---
 
 <div class="modelado-lista">
@@ -31,7 +37,7 @@ const { diagramas = DIAGRAMAS_MODELADO } = Astro.props;
           {item.imagenSrc ? (
             <div class="trabajo-preview__canvas">
               <img
-                src={item.imagenSrc}
+                src={withBase(item.imagenSrc)}
                 alt={`Diagrama: ${item.titulo}`}
                 class="trabajo-preview__img"
                 loading={idx === 0 ? 'eager' : 'lazy'}
@@ -71,7 +77,7 @@ const { diagramas = DIAGRAMAS_MODELADO } = Astro.props;
           )}
 
           <a
-            href={item.descargaSrc}
+            href={withBase(item.descargaSrc)}
             download={item.descargaNombre ?? true}
             class="trabajo-download"
             aria-label={`Descargar modelo de ${item.titulo}`}
