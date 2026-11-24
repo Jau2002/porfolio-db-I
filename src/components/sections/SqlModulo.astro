@@ -1,0 +1,247 @@
+---
+import { EJERCICIOS_SQL, type EjercicioSQL } from '@config/site';
+
+interface Props {
+  ejercicios?: EjercicioSQL[];
+}
+
+const { ejercicios = EJERCICIOS_SQL } = Astro.props;
+---
+
+<div class="sql-lista">
+  {
+    ejercicios.map((item) => (
+      <article class="sql-card" id={item.id}>
+        {/* 1. Título de lo esperado */}
+        <header class="sql-card__header">
+          <h4 class="sql-card__title">{item.tituloEsperado}</h4>
+          {item.etiqueta && <span class="sql-badge">{item.etiqueta}</span>}
+        </header>
+
+        {/* 2. Sentencia / Código SQL */}
+        <div class="sql-code-block">
+          <div class="sql-code-block__bar">
+            <span class="sql-code-block__lang">SQL</span>
+            <button
+              type="button"
+              class="sql-copy-btn"
+              data-copy-sql={item.sentenciaSql}
+              aria-label="Copiar sentencia SQL"
+            >
+              Copiar
+            </button>
+          </div>
+          <pre class="sql-pre"><code>{item.sentenciaSql}</code></pre>
+        </div>
+
+        {/* 3. Respuesta / Resultado */}
+        <div class="sql-respuesta">
+          <span class="sql-respuesta__label">Respuesta / Resultado</span>
+          {item.respuestaTexto && (
+            <p class="sql-respuesta__text">{item.respuestaTexto}</p>
+          )}
+
+          {item.respuestaTabla && (
+            <div class="sql-table-wrap">
+              <table class="sql-table">
+                <thead>
+                  <tr>
+                    {item.respuestaTabla.columnas.map((col) => (
+                      <th>{col}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {item.respuestaTabla.filas.map((fila) => (
+                    <tr>
+                      {fila.map((celda) => (
+                        <td>{celda}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .sql-lista {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .sql-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .sql-card__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sql-card__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    color: var(--text-primary);
+  }
+
+  .sql-badge {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    background: rgba(94, 234, 212, 0.1);
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    color: var(--accent-cyan);
+  }
+
+  .sql-code-block {
+    background: var(--bg-deep);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .sql-code-block__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: rgba(24, 33, 49, 0.65);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sql-code-block__lang {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--accent-cyan);
+    letter-spacing: 0.08em;
+  }
+
+  .sql-copy-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    padding: 0.2rem 0.55rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .sql-copy-btn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  .sql-pre {
+    margin: 0;
+    padding: 1.15rem 1.25rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    line-height: 1.65;
+    color: var(--text-primary);
+  }
+
+  .sql-respuesta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(10, 14, 23, 0.55);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 0 10px 10px 0;
+  }
+
+  .sql-respuesta__label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-cyan);
+  }
+
+  .sql-respuesta__text {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .sql-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .sql-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    text-align: left;
+  }
+
+  .sql-table th {
+    background: var(--bg-elevated-2);
+    color: var(--accent-cyan);
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    font-weight: 500;
+  }
+
+  .sql-table td {
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-primary);
+  }
+
+  .sql-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+</style>
+
+<script>
+  function initSqlCopy() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>('[data-copy-sql]');
+    buttons.forEach((btn) => {
+      btn.onclick = () => {
+        const sql = btn.dataset.copySql ?? '';
+        if (!sql) return;
+        navigator.clipboard.writeText(sql).then(() => {
+          const original = btn.textContent;
+          btn.textContent = '¡Copiado!';
+          setTimeout(() => {
+            btn.textContent = original;
+          }, 1600);
+        });
+      };
+    });
+  }
+
+  initSqlCopy();
+  document.addEventListener('astro:page-load', initSqlCopy);
+</script>

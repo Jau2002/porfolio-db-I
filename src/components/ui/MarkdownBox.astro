@@ -1,0 +1,137 @@
+---
+interface Props {
+  content: string;
+}
+
+const { content } = Astro.props;
+
+function formatInline(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+
+function renderMarkdown(md: string): string {
+  const lines = md.trim().split('\n');
+  const html: string[] = [];
+  let inList = false;
+
+  const closeList = () => {
+    if (inList) {
+      html.push('</ul>');
+      inList = false;
+    }
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) {
+      closeList();
+      continue;
+    }
+
+    if (line.startsWith('### ')) {
+      closeList();
+      html.push(`<h5>${formatInline(line.slice(4))}</h5>`);
+    } else if (line.startsWith('## ')) {
+      closeList();
+      html.push(`<h4>${formatInline(line.slice(3))}</h4>`);
+    } else if (line.startsWith('> ')) {
+      closeList();
+      html.push(`<blockquote>${formatInline(line.slice(2))}</blockquote>`);
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      if (!inList) {
+        html.push('<ul>');
+        inList = true;
+      }
+      html.push(`<li>${formatInline(line.slice(2))}</li>`);
+    } else {
+      closeList();
+      html.push(`<p>${formatInline(line)}</p>`);
+    }
+  }
+
+  closeList();
+  return html.join('\n');
+}
+
+const renderedHtml = renderMarkdown(content);
+---
+
+<div class="md-content" set:html={renderedHtml} />
+
+<style>
+  .md-content {
+    color: var(--text-muted);
+    font-size: clamp(0.9rem, 1.35vw, 0.98rem);
+    line-height: 1.65;
+  }
+
+  .md-content :global(h4),
+  .md-content :global(h5) {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-cyan);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .md-content :global(p) {
+    margin: 0 0 0.75rem 0;
+  }
+
+  .md-content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .md-content :global(ul) {
+    margin: 0.5rem 0 0.75rem 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .md-content :global(ul:last-child) {
+    margin-bottom: 0;
+  }
+
+  .md-content :global(li::marker) {
+    color: var(--accent-cyan);
+  }
+
+  .md-content :global(strong) {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .md-content :global(em) {
+    color: var(--text-primary);
+    font-style: italic;
+  }
+
+  .md-content :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.84em;
+    padding: 0.12rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(94, 234, 212, 0.1);
+    border: 1px solid rgba(94, 234, 212, 0.22);
+    color: var(--accent-cyan);
+  }
+
+  .md-content :global(blockquote) {
+    margin: 0.75rem 0 0 0;
+    padding: 0.65rem 1rem;
+    border-left: 3px solid var(--accent-warm);
+    background: rgba(242, 184, 75, 0.08);
+    border-radius: 0 6px 6px 0;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+  }
+</style>

@@ -1,0 +1,295 @@
+---
+import { DIAGRAMAS_MODELADO, type DiagramaModelado } from '@config/site';
+import MarkdownBox from '@components/ui/MarkdownBox.astro';
+
+interface Props {
+  diagramas?: DiagramaModelado[];
+}
+
+const { diagramas = DIAGRAMAS_MODELADO } = Astro.props;
+---
+
+<div class="modelado-lista">
+  {
+    diagramas.map((item, idx) => (
+      <article class="trabajo-card" id={`modelado-${item.id}`}>
+        <header class="trabajo-card__header">
+          <div class="trabajo-card__title-group">
+            <span class="trabajo-card__index">0{idx + 1}</span>
+            <h4 class="trabajo-card__title">{item.titulo}</h4>
+          </div>
+          {item.etiqueta && <span class="trabajo-badge">{item.etiqueta}</span>}
+        </header>
+
+        {/* 1. Contexto en formato Markdown */}
+        <div class="trabajo-contexto">
+          <MarkdownBox content={item.contextoMd} />
+        </div>
+
+        {/* 2. Vista previa amplia de la imagen / diagrama + 3. Botón de descarga abajo a la derecha */}
+        <div class="trabajo-preview">
+          {item.imagenSrc ? (
+            <div class="trabajo-preview__canvas">
+              <img
+                src={item.imagenSrc}
+                alt={`Diagrama: ${item.titulo}`}
+                class="trabajo-preview__img"
+                loading={idx === 0 ? 'eager' : 'lazy'}
+              />
+            </div>
+          ) : item.embedHtmlSrc ? (
+            <div class="trabajo-preview__embed-note">
+              <div class="trabajo-preview__placeholder">
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="7" height="7" x="3" y="3" rx="1"/>
+                  <rect width="7" height="7" x="14" y="3" rx="1"/>
+                  <rect width="7" height="7" x="14" y="14" rx="1"/>
+                  <rect width="7" height="7" x="3" y="14" rx="1"/>
+                  <path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4"/>
+                </svg>
+                <p class="trabajo-preview__placeholder-title">Diagrama interactivo Draw.io</p>
+                <span class="trabajo-preview__placeholder-file">{item.embedHtmlSrc}</span>
+                <p class="trabajo-preview__placeholder-hint">
+                  Puedes subir la exportación <code>.png</code> a <code>public/</code> o descargar el modelo directamente con el botón inferior derecho.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div class="trabajo-preview__embed-note">
+              <div class="trabajo-preview__placeholder">
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <p class="trabajo-preview__placeholder-title">Archivo fuente Draw.io disponible</p>
+                <span class="trabajo-preview__placeholder-file">{item.descargaSrc}</span>
+                <p class="trabajo-preview__placeholder-hint">
+                  Cuando exportes la imagen <code>.png</code> a <code>public/</code> se mostrará aquí en formato grande.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <a
+            href={item.descargaSrc}
+            download={item.descargaNombre ?? true}
+            class="trabajo-download"
+            aria-label={`Descargar modelo de ${item.titulo}`}
+            title="Descargar modelo"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" x2="12" y1="15" y2="3"/>
+            </svg>
+            <span>Descargar modelo</span>
+          </a>
+        </div>
+      </article>
+    ))
+  }
+</div>
+
+<style>
+  .modelado-lista {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.25rem;
+  }
+
+  .trabajo-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+    transition: border-color 0.25s ease;
+  }
+
+  .trabajo-card:hover {
+    border-color: rgba(94, 234, 212, 0.35);
+  }
+
+  .trabajo-card__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .trabajo-card__title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+  }
+
+  .trabajo-card__index {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--accent-cyan);
+    font-weight: 600;
+  }
+
+  .trabajo-card__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+    color: var(--text-primary);
+  }
+
+  .trabajo-badge {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.28rem 0.65rem;
+    border-radius: 6px;
+    background: rgba(94, 234, 212, 0.1);
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    color: var(--accent-cyan);
+  }
+
+  .trabajo-contexto {
+    padding: 1.1rem 1.35rem;
+    background: rgba(10, 14, 23, 0.55);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 0 10px 10px 0;
+  }
+
+  /* Vista previa que cubre gran parte del bloque */
+  .trabajo-preview {
+    position: relative;
+    width: 100%;
+    min-height: clamp(300px, 54vh, 620px);
+    background: #0d1320;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1rem, 2.5vw, 1.75rem);
+  }
+
+  /* Fondo claro suave dentro del lienzo para que los diagramas PNG con líneas negras se lean con total claridad */
+  .trabajo-preview__canvas {
+    width: 100%;
+    height: 100%;
+    min-height: clamp(270px, 48vh, 560px);
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  }
+
+  .trabajo-preview__img {
+    max-width: 100%;
+    max-height: 540px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .trabajo-preview__embed-note {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .trabajo-preview__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.65rem;
+    max-width: 46ch;
+    color: var(--accent-cyan);
+  }
+
+  .trabajo-preview__placeholder-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--text-primary);
+  }
+
+  .trabajo-preview__placeholder-file {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    background: rgba(94, 234, 212, 0.1);
+    color: var(--accent-cyan);
+  }
+
+  .trabajo-preview__placeholder-hint {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .trabajo-preview__placeholder-hint code {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+  }
+
+  /* Botón de descarga fijo abajo a la derecha dentro de la imagen */
+  .trabajo-download {
+    position: absolute;
+    bottom: clamp(1rem, 2.2vw, 1.5rem);
+    right: clamp(1rem, 2.2vw, 1.5rem);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 1.15rem;
+    border-radius: 10px;
+    border: 1px solid rgba(94, 234, 212, 0.55);
+    background: rgba(10, 14, 23, 0.88);
+    backdrop-filter: blur(10px);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .trabajo-download:hover {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: var(--bg-deep);
+    transform: translateY(-2px);
+  }
+
+  .trabajo-download svg {
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 640px) {
+    .trabajo-download span {
+      display: none;
+    }
+    .trabajo-download {
+      padding: 0.7rem;
+    }
+  }
+</style>

@@ -1,0 +1,261 @@
+---
+import { PROYECTO_INFO, type RecursoProyecto } from '@config/site';
+import MarkdownBox from '@components/ui/MarkdownBox.astro';
+
+interface Props {
+  proyecto?: RecursoProyecto;
+}
+
+const { proyecto = PROYECTO_INFO } = Astro.props;
+---
+
+<div class="proy-modulo">
+  <article class="proy-card">
+    <header class="proy-card__header">
+      <div>
+        <span class="proy-eyebrow">{proyecto.subtitulo}</span>
+        <h4 class="proy-card__title">{proyecto.titulo}</h4>
+      </div>
+    </header>
+
+    {/* Explicación y documentación en Markdown */}
+    <div class="proy-explicacion">
+      <MarkdownBox content={proyecto.explicacionMd} />
+    </div>
+
+    {/* Documentos PDF descargables */}
+    {
+      proyecto.documentosPdf && proyecto.documentosPdf.length > 0 && (
+        <div class="proy-docs">
+          <h5 class="proy-section-label">Documentación y Entregables (PDF)</h5>
+          <div class="proy-docs__grid">
+            {proyecto.documentosPdf.map((doc) => (
+              <div class="proy-doc-item">
+                <div class="proy-doc-item__info">
+                  <span class="proy-doc-item__title">{doc.titulo}</span>
+                  <p class="proy-doc-item__desc">{doc.descripcion}</p>
+                </div>
+                <a
+                  href={doc.src}
+                  download
+                  class="proy-doc-item__btn"
+                  aria-label={`Descargar ${doc.titulo}`}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <path d="M12 18v-6"/>
+                    <path d="m9 15 3 3 3-3"/>
+                  </svg>
+                  <span>PDF</span>
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {/* Galería de imágenes del proyecto */}
+    {
+      proyecto.imagenes && proyecto.imagenes.length > 0 && (
+        <div class="proy-galeria">
+          <h5 class="proy-section-label">Vistas y Diagramas del Proyecto</h5>
+          <div class="proy-galeria__list">
+            {proyecto.imagenes.map((img) => (
+              <figure class="proy-figure">
+                <div class="proy-figure__canvas">
+                  <img src={img.src} alt={img.titulo} loading="lazy" />
+                  <a
+                    href={img.src}
+                    download
+                    class="proy-figure__download"
+                    title="Descargar imagen"
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" x2="12" y1="15" y2="3"/>
+                    </svg>
+                    <span>Descargar</span>
+                  </a>
+                </div>
+                <figcaption class="proy-figure__caption">
+                  <strong>{img.titulo}</strong> — {img.contexto}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </article>
+</div>
+
+<style>
+  .proy-modulo {
+    margin-top: 1.5rem;
+  }
+
+  .proy-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .proy-card__header {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .proy-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .proy-card__title {
+    margin: 0.35rem 0 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.5vw, 1.65rem);
+    color: var(--text-primary);
+  }
+
+  .proy-explicacion {
+    padding: 1.1rem 1.35rem;
+    background: rgba(10, 14, 23, 0.55);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 0 10px 10px 0;
+  }
+
+  .proy-section-label {
+    margin: 0 0 0.85rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-cyan);
+  }
+
+  .proy-docs__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .proy-doc-item {
+    background: var(--bg-deep);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .proy-doc-item__title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+  }
+
+  .proy-doc-item__desc {
+    margin: 0.3rem 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .proy-doc-item__btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.95rem;
+    border-radius: 8px;
+    border: 1px solid rgba(94, 234, 212, 0.45);
+    background: rgba(94, 234, 212, 0.08);
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .proy-doc-item__btn:hover {
+    background: var(--accent-cyan);
+    color: var(--bg-deep);
+  }
+
+  .proy-galeria__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .proy-figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .proy-figure__canvas {
+    position: relative;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: clamp(1rem, 2.5vw, 1.75rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+  }
+
+  .proy-figure__canvas img {
+    max-width: 100%;
+    max-height: 460px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .proy-figure__download {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.95rem;
+    border-radius: 8px;
+    border: 1px solid rgba(94, 234, 212, 0.5);
+    background: rgba(10, 14, 23, 0.88);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .proy-figure__download:hover {
+    background: var(--accent-cyan);
+    color: var(--bg-deep);
+  }
+
+  .proy-figure__caption {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+
+  .proy-figure__caption strong {
+    color: var(--text-primary);
+  }
+</style>
