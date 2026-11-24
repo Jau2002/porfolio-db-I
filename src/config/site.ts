@@ -34,6 +34,13 @@ export interface DiagramaModelado {
   conclusionMd: string;
 }
 
+export interface TablaNormalizacion {
+  titulo: string;
+  subtitulo?: string;
+  columnas: string[];
+  filas: string[][];
+}
+
 export interface EjercicioNormalizacion {
   id: string;
   titulo: string;
@@ -42,12 +49,8 @@ export interface EjercicioNormalizacion {
   /** Ruta del archivo descargable (PDF o Excel) */
   archivoSrc: string;
   archivoNombre?: string;
-  /** Desglose paso a paso del proceso de normalización */
-  tablasResumen?: {
-    formaNormal: string;
-    descripcion: string;
-    esquema: string;
-  }[];
+  /** Tablas estructuradas para representar esquemas, dependencias y pasos de normalización */
+  tablas?: TablaNormalizacion[];
   /** Conclusiones y qué se aprendió al finalizar este ejercicio */
   conclusionMd: string;
 }
@@ -231,32 +234,43 @@ export const EJERCICIOS_NORMALIZACION: EjercicioNormalizacion[] = [
     titulo: "Caso 1 — Hospitalización (Análisis de Dependencias Transitivas, 3FN y FNBC)",
     etiqueta: "Taller · Caso 1",
     contextoMd: `### Contexto y Esquema Original
-Análisis de un esquema de hospitalización con clave candidata simple \`ID_Paciente\`:
-- **Esquema original:** \`(ID_Paciente, Nombre_Paciente, Especialidad_Tratamiento, Cama_Asignada, Ala_Hospital, Médico_Tratante, Teléfono_Médico, Email_Médico, Fecha_Ingreso, Fecha_Alta)\`.
-- **Diagnóstico de Forma Normal:** El esquema original cumple **1FN** (atributos atómicos) y **2FN** (al tener clave simple \`ID_Paciente\`, no existen dependencias parciales), pero **viola 3FN** por dos cadenas de dependencias transitivas entre atributos no primos:
+- **Esquema original (en 2FN):** \`(ID_Paciente [PK], Nombre_Paciente, Especialidad_Tratamiento, Cama_Asignada, Ala_Hospital, Médico_Tratante, Teléfono_Médico, Email_Médico, Fecha_Ingreso, Fecha_Alta)\`.
+- **Diagnóstico:** Cumple **1FN** (atributos atómicos) y **2FN** (clave primaria simple \`ID_Paciente\`), pero **no cumple 3FN** debido a dos cadenas de dependencias transitivas:
   1. \`ID_Paciente → Médico_Tratante → {Teléfono_Médico, Email_Médico, Especialidad_Tratamiento}\`
-  2. \`ID_Paciente → Cama_Asignada → Ala_Hospital\` (la cama física está anclada a un ala, mientras que una especialidad puede tener pacientes en varias alas).
-- **Anomalías detectadas:**
-  - *Inserción:* No se puede registrar un médico nuevo en el directorio hasta que tenga al menos un paciente hospitalizado.
-  - *Actualización:* Si un médico con 8 pacientes cambia de teléfono, hay que actualizar 8 filas con riesgo de inconsistencia.
-  - *Eliminación:* Si el único paciente de la Cama 305 recibe el alta y se borra su registro, se pierde que esa cama existe y pertenece al Ala Norte.`,
+  2. \`ID_Paciente → Cama_Asignada → Ala_Hospital\``,
     archivoSrc: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
     archivoNombre: "Taller_Normalizacion_BD1_DataBikers.pdf",
-    tablasResumen: [
+    tablas: [
       {
-        formaNormal: "Estado Inicial (2FN)",
-        descripcion: "Cumple 1FN y 2FN por clave simple, pero presenta dependencias transitivas hacia Médico y Cama.",
-        esquema: "HOSPITALIZACION (ID_Paciente [PK], Nombre_Paciente, Especialidad_Tratamiento, Cama_Asignada, Ala_Hospital, Médico_Tratante, Teléfono_Médico, Email_Médico, Fecha_Ingreso, Fecha_Alta)",
+        titulo: "1. Dependencias Funcionales Identificadas",
+        subtitulo: "Clasificación de determinantes directos y transitivos en el esquema original",
+        columnas: ["Dependencia Funcional", "Tipo", "Descripción / Regla de Negocio"],
+        filas: [
+          ["ID_Paciente → Nombre_Paciente, Cama_Asignada, Médico_Tratante, Fecha_Ingreso, Fecha_Alta", "Directa (PK)", "El ID identifica unívocamente al paciente, su cama, médico tratante y fechas."],
+          ["Médico_Tratante → Teléfono_Médico", "Transitiva (Viola 3FN)", "El teléfono pertenece al médico, no a la hospitalización."],
+          ["Médico_Tratante → Email_Médico", "Transitiva (Viola 3FN)", "El correo pertenece al médico, no al paciente."],
+          ["Médico_Tratante → Especialidad_Tratamiento", "Transitiva (Viola 3FN)", "Cada médico ejerce una especialidad fija."],
+          ["Cama_Asignada → Ala_Hospital", "Transitiva (Viola 3FN)", "La cama es un objeto físico anclado a un ala del hospital."],
+        ],
       },
       {
-        formaNormal: "Paso 1 → 3FN",
-        descripcion: "Eliminación de la dependencia transitiva Cama_Asignada → Ala_Hospital (descomposición sin pérdida).",
-        esquema: "CAMA (Cama_Asignada [PK], Ala_Hospital) · HOSPITALIZACION_1 (ID_Paciente [PK], ..., Cama_Asignada [FK → CAMA])",
+        titulo: "2. Anomalías del Esquema Original (en 2FN)",
+        columnas: ["Tipo de Anomalía", "Impacto en la Base de Datos"],
+        filas: [
+          ["Anomalía de Inserción", "No se puede registrar a un médico nuevo (con su teléfono, correo y especialidad) hasta que tenga al menos un paciente hospitalizado."],
+          ["Anomalía de Actualización", "Si un médico con 8 pacientes hospitalizados cambia de teléfono, hay que actualizar 8 filas; si falla una, el médico queda con dos teléfonos distintos."],
+          ["Anomalía de Eliminación", "Si el único paciente asignado a la Cama 305 recibe el alta y su fila se elimina, se pierde el registro de que esa cama existe y pertenece al Ala Norte."],
+        ],
       },
       {
-        formaNormal: "Paso 2 → 3FN & FNBC",
-        descripcion: "Eliminación de la dependencia transitiva de Médico_Tratante. Se preservan todas las dependencias y cumple FNBC.",
-        esquema: "CAMA (Cama_Asignada [PK], Ala_Hospital) · MEDICO (Médico_Tratante [PK], Teléfono_Médico, Email_Médico, Especialidad_Tratamiento) · HOSPITALIZACION_FINAL (ID_Paciente [PK], Nombre_Paciente, Cama_Asignada [FK], Médico_Tratante [FK], Fecha_Ingreso, Fecha_Alta)",
+        titulo: "3. Esquema Resultante Normalizado (3FN y FNBC / BCNF)",
+        subtitulo: "Descomposición sin pérdida y con preservación de dependencias",
+        columnas: ["Tabla Resultante", "Clave Primaria (PK)", "Atributos y Claves Foráneas (FK)", "Dependencia Interna", "¿Cumple 3FN / FNBC?"],
+        filas: [
+          ["CAMA", "Cama_Asignada", "Ala_Hospital", "Cama_Asignada → Ala_Hospital", "Sí / Sí"],
+          ["MEDICO", "Médico_Tratante", "Teléfono_Médico, Email_Médico, Especialidad_Tratamiento", "Médico_Tratante → Teléfono, Email, Especialidad", "Sí / Sí"],
+          ["HOSPITALIZACION_FINAL", "ID_Paciente", "Nombre_Paciente, Cama_Asignada (FK → CAMA), Médico_Tratante (FK → MEDICO), Fecha_Ingreso, Fecha_Alta", "ID_Paciente → Nombre, Cama, Médico, Fechas", "Sí / Sí"],
+        ],
       },
     ],
     conclusionMd:
@@ -267,30 +281,42 @@ Análisis de un esquema de hospitalización con clave candidata simple \`ID_Paci
     titulo: "Caso 2 — Empresa de Ventas (Clave Compuesta: De 1FN a 2FN, 3FN y BCNF)",
     etiqueta: "Taller · Caso 2",
     contextoMd: `### Contexto y Esquema Original
-Modelado de pedidos comerciales donde un pedido incluye varios productos.
-- **Esquema original:** \`(ID_Pedido, Fecha_Pedido, ID_Cliente, Nombre_Cliente, Sector_Cliente, ID_Producto, Nombre_Producto, Precio_Producto, Cantidad_Solicitada, ID_Vendedor, Nombre_Vendedor, Comisión_Vendedor)\`.
-- **Clave primaria compuesta:** \`(ID_Pedido, ID_Producto)\`. Solo \`Cantidad_Solicitada\` depende de la clave completa.
-- **Diagnóstico inicial (Solo cumple 1FN):**
-  - **Viola 2FN (Dependencias parciales):** \`Nombre_Producto\` y \`Precio_Producto\` dependen solo de \`ID_Producto\`; mientras que \`Fecha_Pedido\`, \`ID_Cliente\` e \`ID_Vendedor\` dependen solo de \`ID_Pedido\`.
-  - **Viola 3FN (Dependencias transitivas):** \`ID_Cliente → {Nombre_Cliente, Sector_Cliente}\` e \`ID_Vendedor → {Nombre_Vendedor, Comisión_Vendedor}\`.
-- **Impacto en el negocio (Anomalías):** Cambiar el \`Sector_Cliente\` de un cliente con 200 pedidos exige actualizar 200 filas; eliminar el único pedido de un vendedor borra sus datos maestros y comisión.`,
+- **Esquema original (en 1FN):** \`(ID_Pedido [PK], ID_Producto [PK], Fecha_Pedido, ID_Cliente, Nombre_Cliente, Sector_Cliente, Nombre_Producto, Precio_Producto, Cantidad_Solicitada, ID_Vendedor, Nombre_Vendedor, Comisión_Vendedor)\`.
+- **Clave primaria compuesta:** \`(ID_Pedido, ID_Producto)\`.
+- **Diagnóstico inicial:** Solo cumple **1FN**. Viola **2FN** porque existen atributos que dependen solo de una parte de la clave (\`ID_Pedido\` o \`ID_Producto\`), y viola **3FN** por dependencias transitivas hacia cliente y vendedor.`,
     archivoSrc: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
     archivoNombre: "Taller_Normalizacion_BD1_DataBikers.pdf",
-    tablasResumen: [
+    tablas: [
       {
-        formaNormal: "Paso 1 (Hacia 2FN)",
-        descripcion: "Extracción de los atributos que dependen parcialmente solo de ID_Producto.",
-        esquema: "PRODUCTO (ID_Producto [PK], Nombre_Producto, Precio_Producto) · PEDIDO_PRODUCTO (ID_Pedido [PK], ID_Producto [PK, FK], Fecha_Pedido, ID_Cliente, ..., Cantidad_Solicitada)",
+        titulo: "1. Matriz de Dependencias Funcionales",
+        columnas: ["Dependencia Funcional", "Tipo de Dependencia", "Justificación"],
+        filas: [
+          ["(ID_Pedido, ID_Producto) → Cantidad_Solicitada", "Clave completa", "La cantidad solicitada es específica de qué producto se pidió en qué pedido."],
+          ["ID_Pedido → Fecha_Pedido, ID_Cliente, ID_Vendedor", "Parcial (Viola 2FN)", "Cada pedido tiene una única fecha, un único cliente y un único vendedor."],
+          ["ID_Producto → Nombre_Producto, Precio_Producto", "Parcial (Viola 2FN)", "El nombre y precio de catálogo pertenecen al producto, no al pedido."],
+          ["ID_Cliente → Nombre_Cliente, Sector_Cliente", "Transitiva (Viola 3FN)", "El nombre y sector económico pertenecen al cliente (a través de ID_Pedido)."],
+          ["ID_Vendedor → Nombre_Vendedor, Comisión_Vendedor", "Transitiva (Viola 3FN)", "El nombre y porcentaje de comisión dependen del vendedor, no del pedido."],
+        ],
       },
       {
-        formaNormal: "Paso 2 (Cumple 2FN)",
-        descripcion: "Separación de atributos que dependen solo de ID_Pedido. Todo atributo no primo depende ya de la clave completa.",
-        esquema: "DETALLE_PEDIDO (ID_Pedido [PK, FK], ID_Producto [PK, FK], Cantidad_Solicitada) · PEDIDO (ID_Pedido [PK], Fecha_Pedido, ID_Cliente, Nombre_Cliente, Sector_Cliente, ID_Vendedor, Nombre_Vendedor, Comisión_Vendedor) · PRODUCTO (ID_Producto [PK], Nombre_Producto, Precio_Producto)",
+        titulo: "2. Evolución y Verificación por Pasos (1FN → 2FN → 3FN)",
+        columnas: ["Paso", "Forma Normal Alcanzada", "Problema que se Corrige", "¿Surgen nuevas dependencias?"],
+        filas: [
+          ["Paso 1", "Transición a 2FN", "Desaparece la dependencia parcial de ID_Producto al extraer la tabla PRODUCTO.", "No surge ninguna nueva; PRODUCTO queda con clave simple."],
+          ["Paso 2", "Cumple 2FN", "Desaparece la dependencia parcial de ID_Pedido al separar PEDIDO y DETALLE_PEDIDO.", "Se hacen visibles las dependencias transitivas dentro de PEDIDO (Cliente y Vendedor)."],
+          ["Paso 3", "Cumple 3FN y BCNF", "Desaparecen las dependencias transitivas al extraer las tablas CLIENTE y VENDEDOR.", "No surge ninguna; cada una de las 5 tablas depende únicamente de su clave primaria."],
+        ],
       },
       {
-        formaNormal: "Paso 3 (Cumple 3FN y BCNF)",
-        descripcion: "Eliminación de dependencias transitivas separando los catálogos maestros de Clientes y Vendedores (5 tablas finales).",
-        esquema: "CLIENTE (ID_Cliente [PK], Nombre_Cliente, Sector_Cliente) · VENDEDOR (ID_Vendedor [PK], Nombre_Vendedor, Comisión_Vendedor) · PRODUCTO (ID_Producto [PK], Nombre_Producto, Precio_Producto) · PEDIDO (ID_Pedido [PK], Fecha_Pedido, ID_Cliente [FK], ID_Vendedor [FK]) · DETALLE_PEDIDO (ID_Pedido [PK, FK], ID_Producto [PK, FK], Cantidad_Solicitada)",
+        titulo: "3. Esquema Final Normalizado (5 Tablas en 3FN / BCNF)",
+        columnas: ["Tabla", "Clave Primaria (PK)", "Atributos No Primos / Claves Foráneas (FK)"],
+        filas: [
+          ["CLIENTE", "ID_Cliente", "Nombre_Cliente, Sector_Cliente"],
+          ["VENDEDOR", "ID_Vendedor", "Nombre_Vendedor, Comisión_Vendedor"],
+          ["PRODUCTO", "ID_Producto", "Nombre_Producto, Precio_Producto"],
+          ["PEDIDO", "ID_Pedido", "Fecha_Pedido, ID_Cliente (FK → CLIENTE), ID_Vendedor (FK → VENDEDOR)"],
+          ["DETALLE_PEDIDO", "(ID_Pedido, ID_Producto)", "ID_Pedido (FK → PEDIDO), ID_Producto (FK → PRODUCTO), Cantidad_Solicitada"],
+        ],
       },
     ],
     conclusionMd:
@@ -301,28 +327,50 @@ Modelado de pedidos comerciales donde un pedido incluye varios productos.
     titulo: "Caso 3 — Empleados con Múltiples Competencias e Idiomas (Violación de 1FN y Producto Cartesiano)",
     etiqueta: "Taller · Caso 3",
     contextoMd: `### Contexto y Esquema Original
-Análisis de atributos multivaluados independientes en un mismo registro:
-- **Registro original no normalizado (UNF):** \`ID_Empleado = 1\`, \`Nombre_Empleado = 'Empleado_1'\`, \`Competencias_Técnicas = 'Python, Java, SQL'\`, \`Idiomas = 'Español, Inglés, Francés'\`.
-- **¿Por qué viola 1FN?** La Primera Forma Normal exige que cada celda contenga un único **valor atómico**. Aquí existen dos listas de valores simultáneas en una misma fila.
-- **Normalización a 1FN en una sola tabla:** Para aplanar la tabla sin perder combinaciones válidas es obligatorio generar el **producto cartesiano** (\`3 competencias × 3 idiomas = 9 filas\` para \`Empleado_1\`) con clave primaria compuesta \`(ID_Empleado, Competencia, Idioma)\`.
-- **Comparación Columna de Texto vs. Tabla en 1FN:** Guardar \`'Python,Java,SQL'\` en un string impide usar índices (obliga a usar \`LIKE '%Python%'\`), carece de validación y dificulta \`COUNT\` / \`GROUP BY\`; mientras que llevarlo solo a 1FN en una única tabla permite consultas exactas pero repite \`Nombre_Empleado\` 9 veces (dependencia parcial que exige avanzar a formas normales superiores).`,
+- **Esquema original (UNF — No Normalizado):** Un solo registro almacena listas de valores múltiples en la misma fila.
+- **Violación de 1FN:** Tanto \`Competencias_Técnicas\` (\`{Python, Java, SQL}\`) como \`Idiomas\` (\`{Español, Inglés, Francés}\`) contienen múltiples valores no atómicos.
+- **Efecto al pasar a 1FN en una sola tabla:** Exige generar el **producto cartesiano** (\`3 competencias × 3 idiomas = 9 filas\` para \`Empleado_1\`) con clave compuesta \`(ID_Empleado, Competencia, Idioma)\`, repitiendo \`Nombre_Empleado\` en cada fila (dependencia parcial que motiva subir a 2FN/4FN).`,
     archivoSrc: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
     archivoNombre: "Taller_Normalizacion_BD1_DataBikers.pdf",
-    tablasResumen: [
+    tablas: [
       {
-        formaNormal: "UNF (No Normalizado)",
-        descripcion: "Dos atributos multivaluados almacenados como listas de texto en la misma fila.",
-        esquema: "EMPLEADO_UNF (ID_Empleado, Nombre_Empleado, Competencias_Técnicas: {Python, Java, SQL}, Idiomas: {Español, Inglés, Francés})",
+        titulo: "1. Tabla Original (Viola 1FN — Atributos Multivaluados)",
+        columnas: ["ID_Empleado", "Nombre_Empleado", "Competencias_Técnicas (No Atómico)", "Idiomas (No Atómico)"],
+        filas: [
+          ["1", "Empleado_1", "Python, Java, SQL", "Español, Inglés, Francés"],
+        ],
       },
       {
-        formaNormal: "1FN (Tabla Única)",
-        descripcion: "Celdas atómicas mediante producto cartesiano (3 × 3 = 9 tuplas por empleado). Genera redundancia en Nombre_Empleado.",
-        esquema: "EMPLEADO_1FN (ID_Empleado [PK], Competencias_Técnicas [PK], Idiomas [PK], Nombre_Empleado)",
+        titulo: "2. Tabla Normalizada a 1FN (Producto Cartesiano: 3 × 3 = 9 Filas)",
+        subtitulo: "Clave Primaria Compuesta: (ID_Empleado, Competencias_Técnicas, Idiomas)",
+        columnas: ["ID_Empleado (PK)", "Nombre_Empleado (Redundante)", "Competencias_Técnicas (PK)", "Idiomas (PK)"],
+        filas: [
+          ["1", "Empleado_1", "Python", "Español"],
+          ["1", "Empleado_1", "Python", "Inglés"],
+          ["1", "Empleado_1", "Python", "Francés"],
+          ["1", "Empleado_1", "Java", "Español"],
+          ["1", "Empleado_1", "Java", "Inglés"],
+          ["1", "Empleado_1", "Java", "Francés"],
+          ["1", "Empleado_1", "SQL", "Español"],
+          ["1", "Empleado_1", "SQL", "Inglés"],
+          ["1", "Empleado_1", "SQL", "Francés"],
+        ],
       },
       {
-        formaNormal: "Solución Superior (2FN/4FN)",
-        descripcion: "Separación del dato maestro del empleado respecto a sus competencias e idiomas para eliminar anomalías.",
-        esquema: "EMPLEADO (ID_Empleado [PK], Nombre_Empleado) · EMPLEADO_COMPETENCIA (ID_Empleado [PK, FK], Competencia [PK]) · EMPLEADO_IDIOMA (ID_Empleado [PK, FK], Idioma [PK])",
+        titulo: "3. Comparativa: Columna de Texto vs. Tabla en 1FN",
+        columnas: ["Enfoque", "Ventajas", "Desventajas"],
+        filas: [
+          [
+            "Columna de texto ('Python,Java,SQL')",
+            "• Una sola fila por empleado (compacto).\n• Sin redundancia del nombre del empleado.\n• Simple si el dato solo se muestra y nunca se filtra.",
+            "• Viola 1FN (no es atómico).\n• Buscar con LIKE '%Python%' no usa índices y da falsos positivos.\n• Texto libre sin validación; actualizar implica reescribir todo el string.",
+          ],
+          [
+            "Tabla en 1FN",
+            "• Cumple 1FN: cada celda es atómica.\n• Búsqueda exacta e indexable (WHERE Competencia = 'Python').\n• COUNT y GROUP BY directos sin JOINs.",
+            "• Redundancia: Nombre_Empleado se repite en cada fila.\n• Producto cartesiano (competencias × idiomas).\n• Presenta anomalías de inserción, actualización y eliminación que se corrigen en 2FN y superiores.",
+          ],
+        ],
       },
     ],
     conclusionMd:
