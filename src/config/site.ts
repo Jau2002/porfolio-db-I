@@ -21,15 +21,17 @@ export interface DiagramaModelado {
   id: string;
   titulo: string;
   etiqueta?: string;
-  /** Contenido de contexto en formato Markdown (soporta párrafos, listas, **negrita**, `código`, etc.) */
+  /** Contenido de contexto en formato Markdown */
   contextoMd: string;
-  /** Ruta de la imagen PNG/SVG o visor HTML en /public */
+  /** Ruta de la imagen PNG/SVG en /public */
   imagenSrc?: string;
   /** Si el diagrama en /public está en formato .drawio.html interactivo */
   embedHtmlSrc?: string;
   /** Archivo a descargar al pulsar el botón abajo a la derecha */
   descargaSrc: string;
   descargaNombre?: string;
+  /** Conclusiones y qué se aprendió al finalizar este ejercicio */
+  conclusionMd: string;
 }
 
 export interface EjercicioNormalizacion {
@@ -37,14 +39,17 @@ export interface EjercicioNormalizacion {
   titulo: string;
   etiqueta?: string;
   contextoMd: string;
-  excelSrc: string;
-  excelNombre?: string;
-  /** Vista previa opcional de las tablas normalizadas */
+  /** Ruta del archivo descargable (PDF o Excel) */
+  archivoSrc: string;
+  archivoNombre?: string;
+  /** Desglose paso a paso del proceso de normalización */
   tablasResumen?: {
     formaNormal: string;
     descripcion: string;
     esquema: string;
   }[];
+  /** Conclusiones y qué se aprendió al finalizar este ejercicio */
+  conclusionMd: string;
 }
 
 export interface EjercicioSQL {
@@ -61,6 +66,8 @@ export interface EjercicioSQL {
     columnas: string[];
     filas: (string | number)[][];
   };
+  /** Conclusiones y aprendizaje del ejercicio SQL */
+  conclusionMd?: string;
 }
 
 export interface RecursoProyecto {
@@ -78,6 +85,7 @@ export interface RecursoProyecto {
     contexto: string;
     src: string;
   }[];
+  conclusionMd?: string;
 }
 
 export const SITE_META = {
@@ -116,6 +124,8 @@ Modelado Entidad-Relación para la gestión integral de un **taller de servicio 
     embedHtmlSrc: "/ejercicio_1.drawio.html",
     descargaSrc: "/ejercicio_1.drawio.html",
     descargaNombre: "ejercicio_1.drawio.html",
+    conclusionMd:
+      "Se comprendió cómo representar jerarquías de especialización (**ISA**) cuando distintos subtipos de una entidad (`COMPONENTE`) poseen atributos técnicos exclusivos que no deben dejarse como valores nulos en una única tabla general, así como el uso de relaciones recursivas con roles diferenciados (*Mecánico* y *Especialista*).",
   },
   {
     id: "caso-2",
@@ -130,6 +140,8 @@ Diseño conceptual para una empresa de **servicios y consultoría por contratos*
     imagenSrc: "/ejecicio_4.drawio.png",
     descargaSrc: "/ejecicio_4.drawio.html",
     descargaNombre: "ejecicio_4.drawio.html",
+    conclusionMd:
+      "Se aprendió a distinguir cuándo un vínculo contractual requiere modelarse como entidad propia (`CONTRATO`) para conservar el historial de servicios contratados, además de aplicar **dependencia por existencia (`EX`)** en entidades débiles (`EQUIPO_PROYECTO`) cuya vida útil depende del servicio asignado.",
   },
   {
     id: "quiz-veterinaria",
@@ -147,6 +159,8 @@ Modelo conceptual para el control de consultas médicas en una **clínica veteri
     imagenSrc: "/quiz.drawio.png",
     descargaSrc: "/quiz.drawio.png",
     descargaNombre: "quiz-veterinaria.drawio.png",
+    conclusionMd:
+      "Se reforzó la ubicación correcta de los **atributos propios de una relación** (`fecha`, `motivo`, `fecha_ultima_consulta` dentro de `atender`), evitando almacenarlos erróneamente en `MASCOTA` o en `VETERINARIO`, junto con el uso de atributos derivados (`edad`) y multivaluados (`especialidad`).",
   },
   {
     id: "quiz-uno",
@@ -161,6 +175,8 @@ Sistema de registro de **vehículos por cliente y control de reparaciones mecán
     imagenSrc: "/quiz-uno.drawio.png",
     descargaSrc: "/quiz-uno.drawio.png",
     descargaNombre: "quiz-uno.drawio.png",
+    conclusionMd:
+      "Se interiorizó la diferencia entre cardinalidades mínimas y máximas (`1...1` frente a `0...*`) para expresar reglas de negocio como que todo vehículo registrado debe tener un propietario, mientras que un cliente puede tener varios vehículos e múltiples ingresos por reparación.",
   },
   {
     id: "quiz-dos",
@@ -175,6 +191,8 @@ Modelo con **agregación** para el control de inventario, reemplazo y préstamo 
     imagenSrc: "/quiz_dos.drawio.png",
     descargaSrc: "/quiz_dos.drawio.png",
     descargaNombre: "quiz_dos.drawio.png",
+    conclusionMd:
+      "Se aprendió a aplicar el concepto de **agregación (`Prestamo`)** y **dependencia por identificación (`ID`)**, entendiendo cómo una entidad débil (`EQUIPO`) requiere de la llave de `ALMACEN` para identificarse unívocamente y cómo controlar trazabilidad de reemplazos con relaciones recursivas 1:1.",
   },
   {
     id: "taller-puerto",
@@ -188,6 +206,8 @@ Modelado avanzado de **logística marítima y terminal portuaria** con agregaci�
 - **Especialización de personal:** \`OPERARIO\` con relación recursiva \`supervisar\` y jerarquía hacia \`GRUERO\` (*horas_operacion*, *tipo_certificacion*) y \`ESTIBADOR\` (*examen_medico_vigente*), además de \`CONTRATISTA\`, \`SEDE\` y \`SUMINISTRO\`.`,
     descargaSrc: "/taller.drawio",
     descargaNombre: "taller.drawio",
+    conclusionMd:
+      "Este ejercicio integró todos los constructos avanzados del Modelo Entidad-Relación Extendido (EER) en un dominio complejo real: **agregaciones** para relacionar procesos completos con bodegas, **entidades débiles encadenadas** (`RECALADA`), relaciones recursivas de transbordo y supervisión, y **herencia disjunta/solapada** en operarios portuarios.",
   },
   {
     id: "furvo",
@@ -200,41 +220,113 @@ Modelo Entidad-Relación para la organización de un **campeonato universitario 
 - **Vínculos del torneo:** Incluye las relaciones \`DISPUTAR\` (M:N entre equipo y partido), \`COMPETIR\` (entre equipo y fase clasificatoria) y \`TITULAR\` (entre equipo y jugador).`,
     descargaSrc: "/Furvo.drawio",
     descargaNombre: "Furvo.drawio",
+    conclusionMd:
+      "Se consolidó la estructuración de relaciones muchos a muchos (`M:N`) entre equipos y partidos disputados, comprendiendo cómo separar las estadísticas de la fase clasificatoria de los eventos propios de cada encuentro deportivo.",
   },
 ];
 
 export const EJERCICIOS_NORMALIZACION: EjercicioNormalizacion[] = [
   {
-    id: "normalizacion-1",
-    titulo: "Ejercicio de Normalización (1FN, 2FN y 3FN)",
-    etiqueta: "Excel · 1FN → 3FN",
-    contextoMd: `### Contexto del ejercicio
-Proceso paso a paso de normalización de una tabla universal no normalizada (UNF) hasta **Tercera Forma Normal (3FN)** desarrollado en hoja de cálculo Excel.
-
-- **1FN (Primera Forma Normal):** Eliminación de grupos repetitivos y garantía de atomicidad en cada celda, identificando la llave primaria compuesta.
-- **2FN (Segunda Forma Normal):** Separación de dependencias funcionales parciales en tablas independientes para que todo atributo no clave dependa completamente de la llave primaria.
-- **3FN (Tercera Forma Normal):** Eliminación de dependencias transitivas entre atributos no primos.
-
-> Cuando subas tus archivos \`.xlsx\` o archivos de contexto a \`public/\`, se enlazarán directamente aquí para su visualización y descarga.`,
-    excelSrc: "#",
-    excelNombre: "normalizacion_ejercicio_1.xlsx",
+    id: "caso-1-hospitalizacion",
+    titulo: "Caso 1 — Hospitalización (Análisis de Dependencias Transitivas, 3FN y FNBC)",
+    etiqueta: "Taller · Caso 1",
+    contextoMd: `### Contexto y Esquema Original
+Análisis de un esquema de hospitalización con clave candidata simple \`ID_Paciente\`:
+- **Esquema original:** \`(ID_Paciente, Nombre_Paciente, Especialidad_Tratamiento, Cama_Asignada, Ala_Hospital, Médico_Tratante, Teléfono_Médico, Email_Médico, Fecha_Ingreso, Fecha_Alta)\`.
+- **Diagnóstico de Forma Normal:** El esquema original cumple **1FN** (atributos atómicos) y **2FN** (al tener clave simple \`ID_Paciente\`, no existen dependencias parciales), pero **viola 3FN** por dos cadenas de dependencias transitivas entre atributos no primos:
+  1. \`ID_Paciente → Médico_Tratante → {Teléfono_Médico, Email_Médico, Especialidad_Tratamiento}\`
+  2. \`ID_Paciente → Cama_Asignada → Ala_Hospital\` (la cama física está anclada a un ala, mientras que una especialidad puede tener pacientes en varias alas).
+- **Anomalías detectadas:**
+  - *Inserción:* No se puede registrar un médico nuevo en el directorio hasta que tenga al menos un paciente hospitalizado.
+  - *Actualización:* Si un médico con 8 pacientes cambia de teléfono, hay que actualizar 8 filas con riesgo de inconsistencia.
+  - *Eliminación:* Si el único paciente de la Cama 305 recibe el alta y se borra su registro, se pierde que esa cama existe y pertenece al Ala Norte.`,
+    archivoSrc: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
+    archivoNombre: "Taller_Normalizacion_BD1_DataBikers.pdf",
     tablasResumen: [
       {
-        formaNormal: "1FN",
-        descripcion: "Atributos atómicos y eliminación de valores multivaluados.",
-        esquema: "REGISTRO_UNF (id_registro, cod_cliente, nombre_cliente, cod_producto, producto, cantidad, precio_unitario)",
+        formaNormal: "Estado Inicial (2FN)",
+        descripcion: "Cumple 1FN y 2FN por clave simple, pero presenta dependencias transitivas hacia Médico y Cama.",
+        esquema: "HOSPITALIZACION (ID_Paciente [PK], Nombre_Paciente, Especialidad_Tratamiento, Cama_Asignada, Ala_Hospital, Médico_Tratante, Teléfono_Médico, Email_Médico, Fecha_Ingreso, Fecha_Alta)",
       },
       {
-        formaNormal: "2FN",
-        descripcion: "Eliminación de dependencias parciales respecto a la clave compuesta.",
-        esquema: "CLIENTES (cod_cliente [PK], nombre_cliente) · PRODUCTOS (cod_producto [PK], producto, precio_unitario)",
+        formaNormal: "Paso 1 → 3FN",
+        descripcion: "Eliminación de la dependencia transitiva Cama_Asignada → Ala_Hospital (descomposición sin pérdida).",
+        esquema: "CAMA (Cama_Asignada [PK], Ala_Hospital) · HOSPITALIZACION_1 (ID_Paciente [PK], ..., Cama_Asignada [FK → CAMA])",
       },
       {
-        formaNormal: "3FN",
-        descripcion: "Separación de dependencias transitivas y catálogo normalizado.",
-        esquema: "DETALLE_ORDEN (id_registro [PK, FK], cod_producto [PK, FK], cantidad)",
+        formaNormal: "Paso 2 → 3FN & FNBC",
+        descripcion: "Eliminación de la dependencia transitiva de Médico_Tratante. Se preservan todas las dependencias y cumple FNBC.",
+        esquema: "CAMA (Cama_Asignada [PK], Ala_Hospital) · MEDICO (Médico_Tratante [PK], Teléfono_Médico, Email_Médico, Especialidad_Tratamiento) · HOSPITALIZACION_FINAL (ID_Paciente [PK], Nombre_Paciente, Cama_Asignada [FK], Médico_Tratante [FK], Fecha_Ingreso, Fecha_Alta)",
       },
     ],
+    conclusionMd:
+      "Se aprendió que **toda tabla con clave primaria simple en 1FN está automáticamente en 2FN**, pero aun así puede sufrir graves anomalías de inserción, actualización y eliminación debido a **dependencias transitivas (violación de 3FN)**. Además, se comprobó que cuando cada tabla resultante tiene una única clave candidata simple, **3FN y la Forma Normal de Boyce-Codd (FNBC/BCNF) son equivalentes**, logrando integridad total sin sobre-normalizar.",
+  },
+  {
+    id: "caso-2-empresa-ventas",
+    titulo: "Caso 2 — Empresa de Ventas (Clave Compuesta: De 1FN a 2FN, 3FN y BCNF)",
+    etiqueta: "Taller · Caso 2",
+    contextoMd: `### Contexto y Esquema Original
+Modelado de pedidos comerciales donde un pedido incluye varios productos.
+- **Esquema original:** \`(ID_Pedido, Fecha_Pedido, ID_Cliente, Nombre_Cliente, Sector_Cliente, ID_Producto, Nombre_Producto, Precio_Producto, Cantidad_Solicitada, ID_Vendedor, Nombre_Vendedor, Comisión_Vendedor)\`.
+- **Clave primaria compuesta:** \`(ID_Pedido, ID_Producto)\`. Solo \`Cantidad_Solicitada\` depende de la clave completa.
+- **Diagnóstico inicial (Solo cumple 1FN):**
+  - **Viola 2FN (Dependencias parciales):** \`Nombre_Producto\` y \`Precio_Producto\` dependen solo de \`ID_Producto\`; mientras que \`Fecha_Pedido\`, \`ID_Cliente\` e \`ID_Vendedor\` dependen solo de \`ID_Pedido\`.
+  - **Viola 3FN (Dependencias transitivas):** \`ID_Cliente → {Nombre_Cliente, Sector_Cliente}\` e \`ID_Vendedor → {Nombre_Vendedor, Comisión_Vendedor}\`.
+- **Impacto en el negocio (Anomalías):** Cambiar el \`Sector_Cliente\` de un cliente con 200 pedidos exige actualizar 200 filas; eliminar el único pedido de un vendedor borra sus datos maestros y comisión.`,
+    archivoSrc: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
+    archivoNombre: "Taller_Normalizacion_BD1_DataBikers.pdf",
+    tablasResumen: [
+      {
+        formaNormal: "Paso 1 (Hacia 2FN)",
+        descripcion: "Extracción de los atributos que dependen parcialmente solo de ID_Producto.",
+        esquema: "PRODUCTO (ID_Producto [PK], Nombre_Producto, Precio_Producto) · PEDIDO_PRODUCTO (ID_Pedido [PK], ID_Producto [PK, FK], Fecha_Pedido, ID_Cliente, ..., Cantidad_Solicitada)",
+      },
+      {
+        formaNormal: "Paso 2 (Cumple 2FN)",
+        descripcion: "Separación de atributos que dependen solo de ID_Pedido. Todo atributo no primo depende ya de la clave completa.",
+        esquema: "DETALLE_PEDIDO (ID_Pedido [PK, FK], ID_Producto [PK, FK], Cantidad_Solicitada) · PEDIDO (ID_Pedido [PK], Fecha_Pedido, ID_Cliente, Nombre_Cliente, Sector_Cliente, ID_Vendedor, Nombre_Vendedor, Comisión_Vendedor) · PRODUCTO (ID_Producto [PK], Nombre_Producto, Precio_Producto)",
+      },
+      {
+        formaNormal: "Paso 3 (Cumple 3FN y BCNF)",
+        descripcion: "Eliminación de dependencias transitivas separando los catálogos maestros de Clientes y Vendedores (5 tablas finales).",
+        esquema: "CLIENTE (ID_Cliente [PK], Nombre_Cliente, Sector_Cliente) · VENDEDOR (ID_Vendedor [PK], Nombre_Vendedor, Comisión_Vendedor) · PRODUCTO (ID_Producto [PK], Nombre_Producto, Precio_Producto) · PEDIDO (ID_Pedido [PK], Fecha_Pedido, ID_Cliente [FK], ID_Vendedor [FK]) · DETALLE_PEDIDO (ID_Pedido [PK, FK], ID_Producto [PK, FK], Cantidad_Solicitada)",
+      },
+    ],
+    conclusionMd:
+      "Se comprendió el flujo completo de descomposición desde **1FN → 2FN → 3FN** cuando existe una **llave primaria compuesta**: primero se deben separar las dependencias parciales para aislar la tabla puente transaccional (`DETALLE_PEDIDO`) de la cabecera (`PEDIDO`) y el catálogo (`PRODUCTO`), lo cual deja expuestas las dependencias transitivas que finalmente se resuelven en 3FN creando las entidades maestras (`CLIENTE` y `VENDEDOR`).",
+  },
+  {
+    id: "caso-3-empleados-multivaluados",
+    titulo: "Caso 3 — Empleados con Múltiples Competencias e Idiomas (Violación de 1FN y Producto Cartesiano)",
+    etiqueta: "Taller · Caso 3",
+    contextoMd: `### Contexto y Esquema Original
+Análisis de atributos multivaluados independientes en un mismo registro:
+- **Registro original no normalizado (UNF):** \`ID_Empleado = 1\`, \`Nombre_Empleado = 'Empleado_1'\`, \`Competencias_Técnicas = 'Python, Java, SQL'\`, \`Idiomas = 'Español, Inglés, Francés'\`.
+- **¿Por qué viola 1FN?** La Primera Forma Normal exige que cada celda contenga un único **valor atómico**. Aquí existen dos listas de valores simultáneas en una misma fila.
+- **Normalización a 1FN en una sola tabla:** Para aplanar la tabla sin perder combinaciones válidas es obligatorio generar el **producto cartesiano** (\`3 competencias × 3 idiomas = 9 filas\` para \`Empleado_1\`) con clave primaria compuesta \`(ID_Empleado, Competencia, Idioma)\`.
+- **Comparación Columna de Texto vs. Tabla en 1FN:** Guardar \`'Python,Java,SQL'\` en un string impide usar índices (obliga a usar \`LIKE '%Python%'\`), carece de validación y dificulta \`COUNT\` / \`GROUP BY\`; mientras que llevarlo solo a 1FN en una única tabla permite consultas exactas pero repite \`Nombre_Empleado\` 9 veces (dependencia parcial que exige avanzar a formas normales superiores).`,
+    archivoSrc: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
+    archivoNombre: "Taller_Normalizacion_BD1_DataBikers.pdf",
+    tablasResumen: [
+      {
+        formaNormal: "UNF (No Normalizado)",
+        descripcion: "Dos atributos multivaluados almacenados como listas de texto en la misma fila.",
+        esquema: "EMPLEADO_UNF (ID_Empleado, Nombre_Empleado, Competencias_Técnicas: {Python, Java, SQL}, Idiomas: {Español, Inglés, Francés})",
+      },
+      {
+        formaNormal: "1FN (Tabla Única)",
+        descripcion: "Celdas atómicas mediante producto cartesiano (3 × 3 = 9 tuplas por empleado). Genera redundancia en Nombre_Empleado.",
+        esquema: "EMPLEADO_1FN (ID_Empleado [PK], Competencias_Técnicas [PK], Idiomas [PK], Nombre_Empleado)",
+      },
+      {
+        formaNormal: "Solución Superior (2FN/4FN)",
+        descripcion: "Separación del dato maestro del empleado respecto a sus competencias e idiomas para eliminar anomalías.",
+        esquema: "EMPLEADO (ID_Empleado [PK], Nombre_Empleado) · EMPLEADO_COMPETENCIA (ID_Empleado [PK, FK], Competencia [PK]) · EMPLEADO_IDIOMA (ID_Empleado [PK, FK], Idioma [PK])",
+      },
+    ],
+    conclusionMd:
+      "Se aprendió por qué **guardar listas separadas por comas en una columna de texto es un antipatrón relacional** (rompe la atomicidad de 1FN, inhabilita índices y complica agregaciones), pero también se demostró que aplanar dos atributos multivaluados independientes en una sola tabla 1FN produce un **producto cartesiano redundante** que obliga a separar los datos maestros del empleado en formas normales superiores.",
   },
 ];
 
@@ -261,6 +353,8 @@ CREATE TABLE vehiculo (
 );`,
     respuestaTexto:
       "Tablas creadas exitosamente aplicando llaves primarias (PK), restricción de dominio CHECK sobre el modelo del vehículo y llave foránea (FK) con integridad referencial.",
+    conclusionMd:
+      "Se aprendió a traducir restricciones conceptuales del diagrama MER directamente a reglas físicas en el motor SQL mediante `PRIMARY KEY`, `FOREIGN KEY`, `CHECK` y políticas de integridad referencial (`ON UPDATE CASCADE`, `ON DELETE RESTRICT`).",
   },
   {
     id: "sql-2",
@@ -287,6 +381,8 @@ ORDER BY total_reparaciones DESC;`,
         ["MEC-01", "Carlos Ramírez", "KLM-456", "Renault", 1],
       ],
     },
+    conclusionMd:
+      "Se comprendió cómo reconstruir la información distribuida en tablas normalizadas utilizando combinaciones `INNER JOIN` junto con funciones de agregación (`COUNT`) y agrupación (`GROUP BY`).",
   },
 ];
 
@@ -298,20 +394,22 @@ export const PROYECTO_INFO: RecursoProyecto = {
 Este módulo reúne la documentación técnica, los diagramas arquitectónicos, el diccionario de datos y los entregables en PDF del proyecto final de la asignatura.
 
 - **Fase 1 — Levantamiento y Modelado Conceptual:** Definición de reglas de negocio, alcance del sistema y construcción del Modelo Entidad-Relación (MER).
-- **Fase 2 — Diseño Lógico y Normalización:** Transformación al modelo relacional y verificación de formas normales (1FN, 2FN, 3FN).
+- **Fase 2 — Diseño Lógico y Normalización:** Transformación al modelo relacional y verificación de formas normales (1FN, 2FN, 3FN y FNBC).
 - **Fase 3 — Implementación Física (SQL):** Scripts DDL de creación de esquema, carga de datos semilla (DML) y consultas analíticas del negocio.`,
   documentosPdf: [
     {
-      titulo: "Informe Técnico del Proyecto (PDF)",
-      descripcion: "Documento completo con planteamiento del problema, reglas de negocio, diccionario de datos y conclusiones.",
-      src: "#",
+      titulo: "Taller de Normalización — Grupo DataBikers (PDF)",
+      descripcion: "Análisis completo de dependencias funcionales, anomalías y normalización paso a paso hasta 3FN y FNBC.",
+      src: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
     },
   ],
   imagenes: [
     {
-      titulo: "Arquitectura del Modelo Relacional",
-      contexto: "Vista general del esquema de base de datos del proyecto final.",
+      titulo: "Arquitectura del Modelo Conceptual",
+      contexto: "Vista general del esquema Entidad-Relación diseñado para la gestión de contratos y equipos.",
       src: "/ejecicio_4.drawio.png",
     },
   ],
+  conclusionMd:
+    "El desarrollo del proyecto permitió conectar todas las etapas del ciclo de vida de una base de datos relacional: desde abstraer la realidad del negocio en un diagrama MER sin ambigüedades, hasta garantizar cero redundancia mediante normalización formal e implementarlo en SQL.",
 };

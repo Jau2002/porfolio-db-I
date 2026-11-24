@@ -1,5 +1,6 @@
 ---
 import { EJERCICIOS_SQL, type EjercicioSQL } from '@config/site';
+import MarkdownBox from '@components/ui/MarkdownBox.astro';
 
 interface Props {
   ejercicios?: EjercicioSQL[];
@@ -64,6 +65,24 @@ const { ejercicios = EJERCICIOS_SQL } = Astro.props;
             </div>
           )}
         </div>
+
+        {/* 4. Apartado final: Conclusión / Qué se aprendió */}
+        {item.conclusionMd && (
+          <footer class="sql-conclusion">
+            <div class="sql-conclusion__head">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4"/>
+                <path d="m6.8 15-3.5 2"/>
+                <path d="m20.7 17-3.5-2"/>
+                <path d="M6.8 9 3.3 7"/>
+                <path d="m20.7 7-3.5 2"/>
+                <circle cx="12" cy="12" r="4"/>
+              </svg>
+              <span>Conclusión · Qué se aprendió</span>
+            </div>
+            <MarkdownBox content={item.conclusionMd} />
+          </footer>
+        )}
       </article>
     ))
   }
@@ -221,6 +240,29 @@ const { ejercicios = EJERCICIOS_SQL } = Astro.props;
 
   .sql-table tbody tr:last-child td {
     border-bottom: none;
+  }
+
+  .sql-conclusion {
+    padding: 1rem 1.35rem;
+    background: rgba(242, 184, 75, 0.06);
+    border: 1px solid rgba(242, 184, 75, 0.22);
+    border-left: 3px solid var(--accent-warm);
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sql-conclusion__head {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-warm);
   }
 </style>
 

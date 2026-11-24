@@ -27,10 +27,12 @@ const withBase = (path?: string) => {
           {item.etiqueta && <span class="norm-badge">{item.etiqueta}</span>}
         </header>
 
+        {/* 1. Contexto en Markdown */}
         <div class="norm-contexto">
           <MarkdownBox content={item.contextoMd} />
         </div>
 
+        {/* 2. Proceso de normalización paso a paso + Botón de descarga abajo a la derecha */}
         <div class="norm-preview">
           {item.tablasResumen && item.tablasResumen.length > 0 && (
             <div class="norm-steps">
@@ -47,23 +49,38 @@ const withBase = (path?: string) => {
           )}
 
           <a
-            href={withBase(item.excelSrc)}
-            download={item.excelNombre ?? true}
+            href={withBase(item.archivoSrc)}
+            download={item.archivoNombre ?? true}
             class="norm-download"
-            aria-label={`Descargar Excel de ${item.titulo}`}
-            title="Descargar archivo Excel"
+            aria-label={`Descargar documento de ${item.titulo}`}
+            title="Descargar taller de normalización"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <path d="M8 13h2"/>
-              <path d="M8 17h2"/>
-              <path d="M14 13h2"/>
-              <path d="M14 17h2"/>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" x2="12" y1="15" y2="3"/>
             </svg>
-            <span>Descargar Excel ({item.excelNombre ?? '.xlsx'})</span>
+            <span>Descargar Taller ({item.archivoNombre ?? 'PDF'})</span>
           </a>
         </div>
+
+        {/* 3. Apartado final: Conclusiones / Qué se aprendió */}
+        {item.conclusionMd && (
+          <footer class="norm-conclusion">
+            <div class="norm-conclusion__head">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4"/>
+                <path d="m6.8 15-3.5 2"/>
+                <path d="m20.7 17-3.5-2"/>
+                <path d="M6.8 9 3.3 7"/>
+                <path d="m20.7 7-3.5 2"/>
+                <circle cx="12" cy="12" r="4"/>
+              </svg>
+              <span>Conclusión · Qué se aprendió</span>
+            </div>
+            <MarkdownBox content={item.conclusionMd} />
+          </footer>
+        )}
       </article>
     ))
   }
@@ -124,15 +141,15 @@ const withBase = (path?: string) => {
     letter-spacing: 0.06em;
     padding: 0.28rem 0.65rem;
     border-radius: 6px;
-    background: rgba(242, 184, 75, 0.12);
-    border: 1px solid rgba(242, 184, 75, 0.3);
-    color: var(--accent-warm);
+    background: rgba(94, 234, 212, 0.1);
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    color: var(--accent-cyan);
   }
 
   .norm-contexto {
     padding: 1.1rem 1.35rem;
     background: rgba(10, 14, 23, 0.55);
-    border-left: 3px solid var(--accent-warm);
+    border-left: 3px solid var(--accent-cyan);
     border-radius: 0 10px 10px 0;
   }
 
@@ -215,5 +232,28 @@ const withBase = (path?: string) => {
     background: var(--accent-cyan);
     border-color: var(--accent-cyan);
     color: var(--bg-deep);
+  }
+
+  .norm-conclusion {
+    padding: 1rem 1.35rem;
+    background: rgba(242, 184, 75, 0.06);
+    border: 1px solid rgba(242, 184, 75, 0.22);
+    border-left: 3px solid var(--accent-warm);
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .norm-conclusion__head {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-warm);
   }
 </style>
