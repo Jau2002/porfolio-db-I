@@ -1,0 +1,386 @@
+---
+import { SENTENCIAS_ALGEBRA, type SentenciaAlgebra } from '@config/site';
+import MarkdownBox from '@components/ui/MarkdownBox.astro';
+
+interface Props {
+  sentencias?: SentenciaAlgebra[];
+}
+
+const { sentencias = SENTENCIAS_ALGEBRA } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (path: string) => `${base}${path.startsWith('/') ? path : `/${path}`}`;
+
+const introMd = `### Convenciones y Relaciones del Modelo Contable
+Las **51 sentencias de álgebra relacional** se formularon sobre el esquema en 3FN implementado en PostgreSQL y se verificaron contra la base cargada con datos reales de prueba (\`sql/02_seed_datos_realistas.sql\`).
+
+- **Abreviaturas de relaciones:** \`PC\` = \`plan_cuenta\` · \`TC\` = \`tipo_cuenta\` · \`RE\` = \`rubro_estado\` · \`PER\` = \`periodo_contable\` · \`AS\` = \`asiento\` · \`MOV\` = \`movimiento\`.
+- **Operadores utilizados:** Selección (\`σ\` → \`WHERE\`), Proyección (\`π\` → \`SELECT DISTINCT\`), Renombre (\`ρ\` → \`AS\`), Reunión (\`⋈\` → \`JOIN\`), Unión (\`∪\` → \`UNION\`), Intersección (\`∩\` → \`INTERSECT\`), Diferencia (\`−\` → \`EXCEPT\`), Agrupamiento (\`γ\` → \`GROUP BY\`) y División (\`÷\` → \`NOT EXISTS (... EXCEPT ...)\`).`;
+
+const conclusionMd =
+  "La formulación y ejecución de las **51 sentencias de álgebra relacional** demostró cómo todo requerimiento de consulta —desde proyecciones simples sobre el catálogo de cuentas hasta auditorías de **partida doble (`γ, σ`)** y consultas cuantificadas universales con el operador de **división (`÷`)**— tiene una traducción formal exacta hacia SQL sobre el esquema contable en 3FN.";
+---
+
+<div class="alg-modulo">
+  <div class="alg-intro-card">
+    <div class="alg-intro-card__top">
+      <div>
+        <span class="alg-eyebrow">Proyecto Contable · Entregable 8</span>
+        <h4 class="alg-intro-card__title">51 Sentencias de Álgebra Relacional y Equivalentes SQL</h4>
+      </div>
+      <a
+        href={withBase('/08_Algebra_Relacional.pdf')}
+        download="08_Algebra_Relacional.pdf"
+        class="alg-download-btn"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" x2="12" y1="15" y2="3"/>
+        </svg>
+        <span>Descargar PDF (51 Sentencias)</span>
+      </a>
+    </div>
+    <div class="alg-contexto">
+      <MarkdownBox content={introMd} />
+    </div>
+  </div>
+
+  <div class="alg-grid">
+    {
+      sentencias.map((item) => (
+        <article class="alg-card" id={`algebra-${item.numero}`}>
+          {/* 1. Título de lo que se espera y operador */}
+          <header class="alg-card__header">
+            <div class="alg-card__title-group">
+              <span class="alg-card__num">#{String(item.numero).padStart(2, '0')}</span>
+              <h5 class="alg-card__title">{item.tituloEsperado}</h5>
+            </div>
+            <span class="alg-badge" title="Operadores de Álgebra Relacional">
+              Op: {item.operador}
+            </span>
+          </header>
+
+          {/* 2. Expresión formal en Álgebra Relacional */}
+          <div class="alg-block alg-block--algebra">
+            <span class="alg-block__label">Expresión en Álgebra Relacional</span>
+            <code class="alg-block__formula">{item.expresionAlgebra}</code>
+          </div>
+
+          {/* 3. Sentencia equivalente en SQL */}
+          <div class="alg-block alg-block--sql">
+            <div class="alg-block__bar">
+              <span class="alg-block__label">Equivalente SQL (PostgreSQL)</span>
+              <button
+                type="button"
+                class="alg-copy-btn"
+                data-copy-algebra-sql={item.sentenciaSql}
+              >
+                Copiar SQL
+              </button>
+            </div>
+            <pre class="alg-pre"><code>{item.sentenciaSql}</code></pre>
+          </div>
+
+          {/* 4. Resultado esperado / Filas obtenidas */}
+          <div class="alg-result">
+            <span class="alg-result__label">Resultado verificado en BD:</span>
+            <span class="alg-result__value">{item.filas}</span>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  <footer class="alg-conclusion">
+    <div class="alg-conclusion__head">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2v4"/>
+        <path d="m6.8 15-3.5 2"/>
+        <path d="m20.7 17-3.5-2"/>
+        <path d="M6.8 9 3.3 7"/>
+        <path d="m20.7 7-3.5 2"/>
+        <circle cx="12" cy="12" r="4"/>
+      </svg>
+      <span>Conclusión · Qué se aprendió</span>
+    </div>
+    <MarkdownBox content={conclusionMd} />
+  </footer>
+</div>
+
+<style>
+  .alg-modulo {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .alg-intro-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+  }
+
+  .alg-intro-card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .alg-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-cyan);
+  }
+
+  .alg-intro-card__title {
+    margin: 0.25rem 0 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.2rem, 2.3vw, 1.55rem);
+    color: var(--text-primary);
+  }
+
+  .alg-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.05rem;
+    border-radius: 9px;
+    border: 1px solid rgba(94, 234, 212, 0.5);
+    background: rgba(94, 234, 212, 0.1);
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .alg-download-btn:hover {
+    background: var(--accent-cyan);
+    color: var(--bg-deep);
+  }
+
+  .alg-contexto {
+    padding: 1rem 1.25rem;
+    background: rgba(10, 14, 23, 0.55);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 0 10px 10px 0;
+  }
+
+  .alg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr));
+    gap: 1.25rem;
+  }
+
+  .alg-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.2rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .alg-card:hover {
+    border-color: rgba(94, 234, 212, 0.35);
+  }
+
+  .alg-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .alg-card__title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+  }
+
+  .alg-card__num {
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    flex-shrink: 0;
+  }
+
+  .alg-card__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+
+  .alg-badge {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    background: rgba(94, 234, 212, 0.1);
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    color: var(--accent-cyan);
+  }
+
+  .alg-block {
+    border-radius: 8px;
+    padding: 0.75rem 0.95rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .alg-block--algebra {
+    background: rgba(242, 184, 75, 0.07);
+    border: 1px solid rgba(242, 184, 75, 0.24);
+  }
+
+  .alg-block--algebra .alg-block__label {
+    color: var(--accent-warm);
+  }
+
+  .alg-block__formula {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    color: var(--text-primary);
+    word-break: break-word;
+    line-height: 1.5;
+  }
+
+  .alg-block--sql {
+    background: var(--bg-deep);
+    border: 1px solid var(--line);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .alg-block__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.85rem;
+    background: rgba(24, 33, 49, 0.65);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .alg-block__label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-cyan);
+  }
+
+  .alg-copy-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.15rem 0.45rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .alg-copy-btn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  .alg-pre {
+    margin: 0;
+    padding: 0.75rem 0.95rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .alg-result {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.55rem;
+    border-top: 1px dashed var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+
+  .alg-result__label {
+    color: var(--text-muted);
+  }
+
+  .alg-result__value {
+    color: var(--accent-cyan);
+    font-weight: 600;
+  }
+
+  .alg-conclusion {
+    padding: 1rem 1.35rem;
+    background: rgba(242, 184, 75, 0.06);
+    border: 1px solid rgba(242, 184, 75, 0.22);
+    border-left: 3px solid var(--accent-warm);
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .alg-conclusion__head {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-warm);
+  }
+</style>
+
+<script>
+  function initAlgebraCopy() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>('[data-copy-algebra-sql]');
+    buttons.forEach((btn) => {
+      btn.onclick = () => {
+        const sql = btn.dataset.copyAlgebraSql ?? '';
+        if (!sql) return;
+        navigator.clipboard.writeText(sql).then(() => {
+          const original = btn.textContent;
+          btn.textContent = '¡Copiado!';
+          setTimeout(() => {
+            btn.textContent = original;
+          }, 1500);
+        });
+      };
+    });
+  }
+
+  initAlgebraCopy();
+  document.addEventListener('astro:page-load', initAlgebraCopy);
+</script>

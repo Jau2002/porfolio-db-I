@@ -2,6 +2,7 @@
 import { EVIDENCIA_CATEGORIAS } from '@config/site';
 import ModeladoModulo from '@components/sections/ModeladoModulo.astro';
 import NormalizacionModulo from '@components/sections/NormalizacionModulo.astro';
+import AlgebraModulo from '@components/sections/AlgebraModulo.astro';
 import SqlModulo from '@components/sections/SqlModulo.astro';
 import ProyectoModulo from '@components/sections/ProyectoModulo.astro';
 ---
@@ -28,6 +29,7 @@ import ProyectoModulo from '@components/sections/ProyectoModulo.astro';
             <div class="ev-accordion__body">
               {cat.id === 'modelado' && <ModeladoModulo />}
               {cat.id === 'normalizacion' && <NormalizacionModulo />}
+              {cat.id === 'algebra' && <AlgebraModulo />}
               {cat.id === 'sql' && <SqlModulo />}
               {cat.id === 'proyecto' && <ProyectoModulo />}
             </div>
@@ -105,7 +107,7 @@ import ProyectoModulo from '@components/sections/ProyectoModulo.astro';
     align-self: center;
     color: var(--text-muted);
     display: inline-flex;
-    transition: transform 0.25s ease, color 0.2s ease;
+    transition: transform 0.25s ease, color 0.25s ease;
   }
 
   .ev-section--summary:hover .ev-section__toggle {
