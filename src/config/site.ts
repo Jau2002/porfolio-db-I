@@ -376,6 +376,155 @@ export const EJERCICIOS_NORMALIZACION: EjercicioNormalizacion[] = [
     conclusionMd:
       "Se aprendió por qué **guardar listas separadas por comas en una columna de texto es un antipatrón relacional** (rompe la atomicidad de 1FN, inhabilita índices y complica agregaciones), pero también se demostró que aplanar dos atributos multivaluados independientes en una sola tabla 1FN produce un **producto cartesiano redundante** que obliga a separar los datos maestros del empleado en formas normales superiores.",
   },
+  {
+    id: "avanzado-1-envio-internacional",
+    titulo: "Taller Avanzado · Ejercicio 1 — Sistema de Envío Internacional de Mercancía (43 Atributos → 11 Relaciones en 3FN)",
+    etiqueta: "Taller Avanzado · Ej. 1",
+    contextoMd: `### Contexto y Relación Original (ENVIO)
+- **Relación inicial sin normalizar (43 atributos):** La tabla universal \`ENVIO\` contiene dos grupos repetidos anidados: los **paquetes** que ampara una guía y, dentro de cada paquete, sus **eventos de rastreo**.
+- **Llave primaria compuesta al aplanar a 1FN:** \`(num_guia, cod_paquete, cod_evento)\`, que representa la jerarquía \`guía → paquete → evento\`.
+- **Observación clave del análisis de muestra:** Aunque el diccionario sugiere que \`estado_evento\` depende de la tripleta completa, la muestra evidencia que \`E1\` es siempre *«Recogido»*, \`E2\` *«En aduana»* y \`E3\` *«Entregado»*; por tanto, \`cod_evento → estado_evento\` es una dependencia parcial que se separa en el catálogo \`TIPO_EVENTO\`, mientras que \`fecha_evento\` y \`descripcion_evento\` sí dependen de la llave completa.`,
+    archivoSrc: "/taller_normalizacion_avanzado_JaumeSuarez.pdf",
+    archivoNombre: "taller_normalizacion_avanzado_JaumeSuarez.pdf",
+    tablas: [
+      {
+        titulo: "1. Dependencias Funcionales Identificadas (11 DF sobre los 43 Atributos)",
+        columnas: ["N.º", "Determinante", "Atributos que Determina Funcionalmente"],
+        filas: [
+          ["DF 1", "num_guia", "fecha_guia, hora_guia, orgn_nit, dest_id, cod_empleado, placa_vehiculo, cod_pago"],
+          ["DF 2", "orgn_nit", "orgn_nombre, orgn_actividad, orgn_ciudad, orgn_pais, orgn_direccion, orgn_telefono, orgn_celular"],
+          ["DF 3", "dest_id", "dest_nombre, dest_direccion, dest_telefono, dest_cod_ciudad"],
+          ["DF 4", "dest_cod_ciudad", "dest_ciudad, dest_pais, dest_km_desde_origen, cod_zona"],
+          ["DF 5", "cod_zona", "nombre_zona, tarifa_base_zona"],
+          ["DF 6", "cod_empleado", "nombre_empleado, licencia_empleado"],
+          ["DF 7", "placa_vehiculo", "tipo_vehiculo, capacidad_vehiculo"],
+          ["DF 8", "cod_pago", "metodo_pago, valor_pagado"],
+          ["DF 9", "cod_paquete", "num_guia, tipo_paquete, nombre_paquete, descripcion_paquete, peso_paquete, valor_declarado, cant_unidades, valor_flete_paquete"],
+          ["DF 10", "cod_evento", "estado_evento"],
+          ["DF 11", "num_guia, cod_paquete, cod_evento", "fecha_evento, descripcion_evento"],
+        ],
+      },
+      {
+        titulo: "2. Reglas Incumplidas y Transición 1FN → 2FN → 3FN",
+        columnas: ["Etapa", "Diagnóstico / Regla Aplicada", "Descomposición Realizada"],
+        filas: [
+          [
+            "1FN",
+            "Eliminación de grupos repetidos anidados (paquetes y eventos por paquete).",
+            "ENVIO_1FN con PK compuesta (num_guia, cod_paquete, cod_evento) y 40 atributos descriptivos.",
+          ],
+          [
+            "2FN",
+            "Eliminación de dependencias parciales respecto a la tripleta (num_guia, cod_paquete, cod_evento).",
+            "Se divide en 4 relaciones: GUIA_2FN (PK: num_guia), PAQUETE (PK: cod_paquete), TIPO_EVENTO (PK: cod_evento) y EVENTO_RASTREO (PK: num_guia, cod_paquete, cod_evento).",
+          ],
+          [
+            "3FN",
+            "Eliminación de 7 dependencias transitivas contenidas dentro de GUIA_2FN (incluyendo la cadena dest_id → dest_cod_ciudad → cod_zona).",
+            "Se extraen REMITENTE, DESTINATARIO, CIUDAD_DESTINO, ZONA, EMPLEADO, VEHICULO y PAGO, dejando GUIA solo con fecha, hora y 5 claves foráneas.",
+          ],
+        ],
+      },
+      {
+        titulo: "3. Esquema Relacional Final en 3FN (11 Relaciones — Reunión sin Pérdida)",
+        subtitulo: "Cada una de las 11 dependencias funcionales queda preservada en una única tabla",
+        columnas: ["Relación", "Clave Primaria (PK)", "Atributos Descriptivos", "Claves Foráneas (FK)"],
+        filas: [
+          ["GUIA", "num_guia", "fecha_guia, hora_guia", "orgn_nit → REMITENTE · dest_id → DESTINATARIO · cod_empleado → EMPLEADO · placa_vehiculo → VEHICULO · cod_pago → PAGO"],
+          ["REMITENTE", "orgn_nit", "orgn_nombre, orgn_actividad, orgn_ciudad, orgn_pais, orgn_direccion, orgn_telefono, orgn_celular", "—"],
+          ["DESTINATARIO", "dest_id", "dest_nombre, dest_direccion, dest_telefono", "dest_cod_ciudad → CIUDAD_DESTINO"],
+          ["CIUDAD_DESTINO", "dest_cod_ciudad", "dest_ciudad, dest_pais, dest_km_desde_origen", "cod_zona → ZONA"],
+          ["ZONA", "cod_zona", "nombre_zona, tarifa_base_zona", "—"],
+          ["EMPLEADO", "cod_empleado", "nombre_empleado, licencia_empleado", "—"],
+          ["VEHICULO", "placa_vehiculo", "tipo_vehiculo, capacidad_vehiculo", "—"],
+          ["PAGO", "cod_pago", "metodo_pago, valor_pagado", "—"],
+          ["PAQUETE", "cod_paquete", "tipo_paquete, nombre_paquete, descripcion_paquete, peso_paquete, valor_declarado, cant_unidades, valor_flete_paquete", "num_guia → GUIA"],
+          ["TIPO_EVENTO", "cod_evento", "estado_evento", "—"],
+          ["EVENTO_RASTREO", "(num_guia, cod_paquete, cod_evento)", "fecha_evento, descripcion_evento", "num_guia → GUIA · cod_paquete → PAQUETE · cod_evento → TIPO_EVENTO"],
+        ],
+      },
+    ],
+    conclusionMd:
+      "Se aprendió a contrastar el **diccionario de datos contra la muestra real de registros** para descubrir dependencias parciales ocultas (`cod_evento → estado_evento`), así como a desanidar jerarquías multinivel (`guía → paquete → evento`) y cadenas transitivas encadenadas (`dest_id → dest_cod_ciudad → cod_zona`) garantizando reunión natural sin pérdida en las 11 tablas resultantes.",
+  },
+  {
+    id: "avanzado-2-videoclub",
+    titulo: "Taller Avanzado · Ejercicio 2 — Sistema Integral de Video Club (Llave de 4 Atributos → 13 Relaciones en 3FN)",
+    etiqueta: "Taller Avanzado · Ej. 2",
+    contextoMd: `### Contexto y Relación Original (ALQUILER)
+- **Grupos repetidos y multivaluados independientes:** La tabla universal \`ALQUILER\` mezcla alquileres, membresías, clientes, planes, sucursales, casetes, películas, directores, categorías y actores. Un alquiler incluye varios casetes, y cada película tiene múltiples **actores** y múltiples **categorías** independientes entre sí (lo que genera un producto cartesiano \`actor × categoría\` al aplanar).
+- **Llave primaria compuesta en 1FN:** \`(cod_alquiler, cod_cassette, cod_actor, cod_categoria)\` con 32 atributos descriptivos restantes.
+- **Decisiones de diseño en 3FN:**
+  1. *Separación entre medio físico (\`CASSETTE\`) y obra (\`PELICULA\`):* Como el rol de un actor y las categorías pertenecen a la película y no a la copia física del casete, en 3FN \`CASSETTE_ACTOR\` y \`CASSETTE_CATEGORIA\` se transforman en \`PELICULA_ACTOR\` y \`PELICULA_CATEGORIA\`.
+  2. *Atributos derivados (DF 13 y 14):* \`dias_retraso\` (\`fecha_real_dev - fecha_prog_dev\`) y \`recargo_mora\` dependen de otros atributos no clave; se eliminan del esquema físico 3FN para obtenerse por consulta.`,
+    archivoSrc: "/taller_normalizacion_avanzado_JaumeSuarez.pdf",
+    archivoNombre: "taller_normalizacion_avanzado_JaumeSuarez.pdf",
+    tablas: [
+      {
+        titulo: "1. Dependencias Funcionales Identificadas (14 DF)",
+        columnas: ["N.º", "Determinante", "Atributos que Determina Funcionalmente"],
+        filas: [
+          ["DF 1", "cod_alquiler", "fecha_alquiler, num_membresia, cod_sucursal"],
+          ["DF 2", "num_membresia", "cod_cliente, cod_plan"],
+          ["DF 3", "cod_cliente", "nom_cliente, dir_cliente, tel_cliente, email_cliente"],
+          ["DF 4", "cod_plan", "nombre_plan, tarifa_dia_plan, dias_prestamo_max"],
+          ["DF 5", "cod_sucursal", "nombre_sucursal, direccion_sucursal, ciudad_sucursal"],
+          ["DF 6", "cod_cassette", "formato_cassette, estado_cassette, cod_pelicula"],
+          ["DF 7", "cod_pelicula", "titulo_pelicula, anio_pelicula, cod_director"],
+          ["DF 8", "cod_director", "nombre_director, nacionalidad_director"],
+          ["DF 9", "cod_categoria", "nombre_categoria, recargo_categoria"],
+          ["DF 10", "cod_actor", "nombre_actor, fecha_nac_actor"],
+          ["DF 11", "cod_pelicula, cod_actor", "rol_en_pelicula"],
+          ["DF 12", "cod_alquiler, cod_cassette", "fecha_prog_dev, fecha_real_dev"],
+          ["DF 13", "fecha_prog_dev, fecha_real_dev", "dias_retraso (atributo derivado / calculable)"],
+          ["DF 14", "dias_retraso, recargo_categoria", "recargo_mora (atributo derivado / calculable)"],
+        ],
+      },
+      {
+        titulo: "2. Descomposición Paso a Paso (1FN → 2FN → 3FN)",
+        columnas: ["Fase", "Relaciones Generadas", "Problema Resuelto"],
+        filas: [
+          [
+            "1FN",
+            "ALQUILER_1FN (PK: cod_alquiler, cod_cassette, cod_actor, cod_categoria)",
+            "Aplanamiento de grupos repetidos de casetes y atributos multivaluados independientes de actores y categorías.",
+          ],
+          [
+            "2FN (7 tablas)",
+            "ALQUILER_2FN, DETALLE_2FN, CASSETTE_2FN, CASSETTE_ACTOR, CASSETTE_CATEGORIA, ACTOR, CATEGORIA",
+            "Eliminación de todas las dependencias parciales sobre subconjuntos de la llave de 4 atributos.",
+          ],
+          [
+            "3FN (13 tablas)",
+            "Extracción de MEMBRESIA, CLIENTE, PLAN_MEMBRESIA, SUCURSAL, PELICULA, DIRECTOR; reemplazo por PELICULA_ACTOR y PELICULA_CATEGORIA; remoción de derivados en DETALLE_ALQUILER",
+            "Eliminación de cadenas transitivas, desacoplamiento entre copia física (casete) y película, y exclusión de atributos calculables.",
+          ],
+        ],
+      },
+      {
+        titulo: "3. Esquema Relacional Final en 3FN (13 Relaciones)",
+        subtitulo: "Cumple reunión sin pérdida y preservación de dependencias funcionales",
+        columnas: ["Relación", "Clave Primaria (PK)", "Atributos Descriptivos", "Claves Foráneas (FK)"],
+        filas: [
+          ["ALQUILER", "cod_alquiler", "fecha_alquiler", "num_membresia → MEMBRESIA · cod_sucursal → SUCURSAL"],
+          ["DETALLE_ALQUILER", "(cod_alquiler, cod_cassette)", "fecha_prog_dev, fecha_real_dev", "cod_alquiler → ALQUILER · cod_cassette → CASSETTE"],
+          ["MEMBRESIA", "num_membresia", "—", "cod_cliente → CLIENTE · cod_plan → PLAN_MEMBRESIA"],
+          ["CLIENTE", "cod_cliente", "nom_cliente, dir_cliente, tel_cliente, email_cliente", "—"],
+          ["PLAN_MEMBRESIA", "cod_plan", "nombre_plan, tarifa_dia_plan, dias_prestamo_max", "—"],
+          ["SUCURSAL", "cod_sucursal", "nombre_sucursal, direccion_sucursal, ciudad_sucursal", "—"],
+          ["CASSETTE", "cod_cassette", "formato_cassette, estado_cassette", "cod_pelicula → PELICULA"],
+          ["PELICULA", "cod_pelicula", "titulo_pelicula, anio_pelicula", "cod_director → DIRECTOR"],
+          ["DIRECTOR", "cod_director", "nombre_director, nacionalidad_director", "—"],
+          ["ACTOR", "cod_actor", "nombre_actor, fecha_nac_actor", "—"],
+          ["CATEGORIA", "cod_categoria", "nombre_categoria, recargo_categoria", "—"],
+          ["PELICULA_ACTOR", "(cod_pelicula, cod_actor)", "rol_en_pelicula", "cod_pelicula → PELICULA · cod_actor → ACTOR"],
+          ["PELICULA_CATEGORIA", "(cod_pelicula, cod_categoria)", "— (relación puente pura)", "cod_pelicula → PELICULA · cod_categoria → CATEGORIA"],
+        ],
+      },
+    ],
+    conclusionMd:
+      "Se aprendió a resolver esquemas de alta complejidad donde confluyen **grupos repetidos y múltiples atributos multivaluados independientes** (que en 1FN obligan a una llave de 4 atributos con producto cartesiano). El aprendizaje más valioso fue identificar cómo en **3FN** las asociaciones de actores y categorías deben vincularse a la entidad conceptual (`PELICULA`) y no al ejemplar físico (`CASSETTE`), además de tratar los **atributos derivados** (`dias_retraso`, `recargo_mora`) como dependencias transitivas que se calculan en consulta en lugar de almacenarse redundantemente.",
+  },
 ];
 
 export const EJERCICIOS_SQL: EjercicioSQL[] = [
@@ -449,6 +598,11 @@ Este módulo reúne la documentación técnica, los diagramas arquitectónicos, 
       titulo: "Taller de Normalización — Grupo DataBikers (PDF)",
       descripcion: "Análisis completo de dependencias funcionales, anomalías y normalización paso a paso hasta 3FN y FNBC.",
       src: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
+    },
+    {
+      titulo: "Taller de Normalización Avanzado — Jaume Suarez (PDF)",
+      descripcion: "Desarrollo formal 1FN → 2FN → 3FN para el Sistema de Envío Internacional (11 relaciones) y Video Club (13 relaciones).",
+      src: "/taller_normalizacion_avanzado_JaumeSuarez.pdf",
     },
   ],
   imagenes: [
