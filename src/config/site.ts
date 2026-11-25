@@ -78,14 +78,17 @@ export interface RecursoProyecto {
   titulo: string;
   subtitulo: string;
   explicacionMd: string;
-  documentosPdf?: {
-    titulo: string;
-    descripcion: string;
-    src: string;
-  }[];
+  tablas?: TablaNormalizacion[];
   imagenes?: {
     titulo: string;
     contexto: string;
+    src: string;
+    pdfSrc?: string;
+  }[];
+  documentosPdf?: {
+    categoria?: string;
+    titulo: string;
+    descripcion: string;
     src: string;
   }[];
   conclusionMd?: string;
@@ -585,33 +588,155 @@ ORDER BY total_reparaciones DESC;`,
 
 export const PROYECTO_INFO: RecursoProyecto = {
   id: "proyecto-semestral",
-  titulo: "Proyecto Semestral de Bases de Datos I",
-  subtitulo: "Diseño, Normalización e Implementación SGBD",
-  explicacionMd: `### Descripción general del proyecto
-Este módulo reúne la documentación técnica, los diagramas arquitectónicos, el diccionario de datos y los entregables en PDF del proyecto final de la asignatura.
+  titulo: "Sistema Contable para Pymes: Balance General y Estado de Resultados",
+  subtitulo: "Grupo DataBikers · PostgreSQL 16/17 · 3FN · Arquitectura de Tres Capas en Azure",
+  explicacionMd: `### Síntesis Ejecutiva del Proyecto
+Diseño, normalización e implementación de una **base de datos relacional en Tercera Forma Normal (3FN)** que centraliza el plan de cuentas (PUC), periodos y asientos contables bajo el principio de **partida doble**, generando en tiempo real el **Balance General** y el **Estado de Resultados** sin almacenar saldos redundantes.
 
-- **Fase 1 — Levantamiento y Modelado Conceptual:** Definición de reglas de negocio, alcance del sistema y construcción del Modelo Entidad-Relación (MER).
-- **Fase 2 — Diseño Lógico y Normalización:** Transformación al modelo relacional y verificación de formas normales (1FN, 2FN, 3FN y FNBC).
-- **Fase 3 — Implementación Física (SQL):** Scripts DDL de creación de esquema, carga de datos semilla (DML) y consultas analíticas del negocio.`,
-  documentosPdf: [
+- **Modelo de Datos (12 Entidades y 17 Relaciones):** Incluye relaciones \`1:1\` (*cierre de periodo*), \`1:N\`, \`N:M\` (resuelta en \`MOVIMIENTO\` con \`debe\` y \`haber\`) y **jerarquías recursivas** (\`PLAN_CUENTA\` y \`RUBRO_ESTADO\`). El análisis EER demostró que no se requieren supertipos/subtipos adicionales.
+- **Integridad Declarativa en PostgreSQL:** Montos exactos con \`NUMERIC(20,2)\`, llaves primarias \`BIGINT IDENTITY\`, \`CHECK\` de partida exclusiva (\`debe > 0 XOR haber > 0\`), restricción \`EXCLUDE USING gist\` para impedir traslape de periodos y validación de partida doble (\`Σ debe = Σ haber\`).
+- **Arquitectura de 3 Capas en Azure:** Desplegada sobre 3 máquinas virtuales **Ubuntu Server 26.04 LTS** segmentadas por subred y NSG (\`vm-web\` con Angular + Nginx, \`vm-api\` con FastAPI + psycopg 3 y \`vm-db\` con PostgreSQL aislado sin IP pública).`,
+  tablas: [
     {
-      titulo: "Taller de Normalización — Grupo DataBikers (PDF)",
-      descripcion: "Análisis completo de dependencias funcionales, anomalías y normalización paso a paso hasta 3FN y FNBC.",
-      src: "/Taller Normalización_BD1 Grupo DataBikers.pdf",
+      titulo: "1. Esquema Relacional en 3FN (12 Tablas, 17 FK, 15 CHECK y 1 EXCLUDE)",
+      subtitulo: "Los saldos y reportes financieros se derivan por consulta desde MOVIMIENTO (Supuesto S-07)",
+      columnas: ["Tabla", "Clave Primaria (PK)", "Claves Foráneas (FK) y Restricciones Clave", "Propósito en el Dominio Contable"],
+      filas: [
+        ["moneda", "id_moneda", "UK(codigo), CHECK(longitud = 3)", "Catálogo ISO 4217 de monedas funcionales (COP, USD)."],
+        ["empresa", "id_empresa", "FK(id_moneda), UK(nit)", "Organización propietaria de la contabilidad."],
+        ["periodo_contable", "id_periodo", "FK(id_empresa), EXCLUDE gist (sin traslape)", "Rango de fechas contables en estado ABIERTO o CERRADO."],
+        ["tipo_cuenta", "id_tipo_cuenta", "UK(clase, naturaleza)", "6 clases PUC (Activo, Pasivo, Patrimonio, Ingreso, Costo, Gasto) y naturaleza."],
+        ["rubro_estado", "id_rubro", "FK(id_rubro_padre?), UK(codigo)", "Jerarquía recursiva de secciones del Balance y Estado de Resultados."],
+        ["plan_cuenta", "id_cuenta", "FK(id_empresa, id_cuenta_padre?), FK(id_tipo_cuenta, id_rubro)", "Árbol recursivo de cuentas por empresa; marca si acepta movimiento (hoja)."],
+        ["tipo_asiento", "id_tipo_asiento", "UK(nombre: APERTURA, DIARIO, AJUSTE, CIERRE)", "Clasificación del comprobante contable."],
+        ["asiento", "id_asiento", "FK(id_periodo, id_tipo_asiento), UK(id_periodo, numero)", "Cabecera del comprobante en estado BORRADOR o CONTABILIZADO."],
+        ["movimiento", "id_movimiento", "FK(id_asiento, id_cuenta, id_tercero?, id_centro_costo?), CHECK(debe XOR haber)", "Entidad asociativa N:M con imputaciones monetarias exactas NUMERIC(20,2)."],
+        ["tercero", "id_tercero", "FK(id_empresa), UK(id_empresa, documento)", "Clientes, proveedores u otros terceros asociados a movimientos."],
+        ["centro_costo", "id_centro_costo", "FK(id_empresa), UK(id_empresa, codigo)", "Áreas operativas para análisis de ingresos y gastos."],
+        ["cierre_periodo", "id_cierre", "FK,UK(id_periodo), FK,UK(id_asiento_cierre?)", "Registro 1:1 del cierre contable y utilidad neta trasladada al patrimonio."],
+      ],
     },
     {
-      titulo: "Taller de Normalización Avanzado — Jaume Suarez (PDF)",
-      descripcion: "Desarrollo formal 1FN → 2FN → 3FN para el Sistema de Envío Internacional (11 relaciones) y Video Club (13 relaciones).",
-      src: "/taller_normalizacion_avanzado_JaumeSuarez.pdf",
+      titulo: "2. Síntesis de Análisis de Selección Tecnológica (SO y RDBMS)",
+      subtitulo: "Decisiones fundamentadas bajo restricciones arquitectónicas y Costo Total de Propiedad ($0 COP)",
+      columnas: ["Capa / Decisión", "Alternativa Seleccionada", "Alternativas Descartadas", "Justificación Técnica Principal"],
+      filas: [
+        [
+          "Sistema Operativo (3 VM en Azure)",
+          "Ubuntu Server 26.04 LTS",
+          "RHEL y SLES (licencia por hora), Oracle Linux, Rocky/AlmaLinux, Debian",
+          "Imagen oficial de Canonical en Azure sin costo de licencia SO, 5 años de parches LTS gratuitos (ampliables con Ubuntu Pro) y soporte nativo de paquetes PostgreSQL y Python.",
+        ],
+        [
+          "Motor de Base de Datos (VM-DB)",
+          "PostgreSQL 16 / 17",
+          "Oracle DB 23ai Free (tope 2 CPU / 2 GB RAM / 12 GB), MySQL y MariaDB Community",
+          "Único motor libre sin topes de hardware con DDL transaccional, restricción EXCLUDE USING gist contra traslape de periodos, triggers diferibles al COMMIT e índices cubrientes INCLUDE.",
+        ],
+      ],
+    },
+    {
+      titulo: "3. Muestra de Sentencias de Álgebra Relacional Verificadas (de 51 formuladas)",
+      subtitulo: "Ejecutadas sobre PostgreSQL con 399 registros semilla de 4 empresas colombianas",
+      columnas: ["Operador", "Consulta de Negocio", "Expresión en Álgebra Relacional", "Filas"],
+      filas: [
+        ["σ, π", "Cuentas que aceptan movimiento (cuentas hoja)", "π codigo, nombre (σ acepta_movimiento=TRUE (PC))", "52"],
+        ["⋈", "Cuentas de la empresa 1 con su clase y naturaleza", "π codigo, nombre, clase, naturaleza (σ id_empresa=1 (PC ⋈ TC))", "90"],
+        ["−", "Cuentas registradas que aún no tienen movimientos", "π id_cuenta (PC) − π id_cuenta (MOV)", "63"],
+        ["γ, ⋈", "Saldo contable acumulado por clase de cuenta", "γ clase; SUM(debe) − SUM(haber) → saldo (MOV ⋈ PC ⋈ TC)", "6"],
+        ["γ, σ", "Auditoría de Partida Doble (asientos descuadrados)", "σ debe_total ≠ haber_total (γ id_asiento; SUM(debe)→debe_total, SUM(haber)→haber_total (MOV))", "0"],
+        ["÷", "Empresas con cuentas en todos los tipos de cuenta", "π id_empresa, id_tipo_cuenta (PC) ÷ π id_tipo_cuenta (TC)", "1"],
+      ],
     },
   ],
   imagenes: [
     {
-      titulo: "Arquitectura del Modelo Conceptual",
-      contexto: "Vista general del esquema Entidad-Relación diseñado para la gestión de contratos y equipos.",
-      src: "/ejecicio_4.drawio.png",
+      titulo: "1. Modelo Conceptual Entidad-Relación (Notación Peter Chen)",
+      contexto: "12 entidades y 17 relaciones: jerarquías recursivas en PLAN_CUENTA y RUBRO_ESTADO, cierre 1:1 y relación asociativa MOVIMIENTO.",
+      src: "/proy_mer_chen.svg",
+      pdfSrc: "/03_Modelo_ER_Peter_Chen.pdf",
+    },
+    {
+      titulo: "2. Esquema Relacional Normalizado en 3FN (Notación Crow's Foot)",
+      contexto: "12 tablas físicas con llaves sustitutas BIGINT IDENTITY, 17 llaves foráneas ON DELETE RESTRICT y montos exactos NUMERIC(20,2).",
+      src: "/proy_relacional_3fn.svg",
+      pdfSrc: "/06_Modelo_Relacional_Crows_Foot.pdf",
+    },
+    {
+      titulo: "3. Topología de Tres Capas y Aislamiento de Red en Microsoft Azure",
+      contexto: "Segmentación en 3 subredes (snet-web, snet-app, snet-data) con NSG por capa; PostgreSQL solo acepta conexiones TLS desde FastAPI.",
+      src: "/proy_arquitectura_azure.svg",
+      pdfSrc: "/Proyecto_Final_BD1_Documento_Final.pdf",
+    },
+  ],
+  documentosPdf: [
+    {
+      categoria: "Documento Maestro",
+      titulo: "Documento Final Consolidado del Proyecto (Paper IEEE + Anexos)",
+      descripcion: "Artículo completo del sistema contable: marco teórico, modelos, normalización 3FN, arquitectura en Azure, pruebas y anexos.",
+      src: "/Proyecto_Final_BD1_Documento_Final.pdf",
+    },
+    {
+      categoria: "Fase 1 · Definición",
+      titulo: "01. Propuesta del Proyecto Contable",
+      descripcion: "Planteamiento del problema en pymes, justificación, alcance, modelo propuesto de 12 entidades y 15 requerimientos funcionales.",
+      src: "/01_Propuesta_del_Proyecto-2.pdf",
+    },
+    {
+      categoria: "Fase 1 · Reglas",
+      titulo: "02. Documento de Supuestos y Restricciones (S-01 a S-37)",
+      descripcion: "37 supuestos de diseño sobre partida doble, periodos sin traslape, cálculo dinámico de saldos sin redundancia y cierre contable.",
+      src: "/02_Documento_de_Supuestos-2.pdf",
+    },
+    {
+      categoria: "Fase 1 · Conceptual",
+      titulo: "03. Modelo Entidad-Relación en Notación Peter Chen",
+      descripcion: "Diagrama conceptual de 12 entidades con sus atributos identificadores, cardinalidades y participaciones.",
+      src: "/03_Modelo_ER_Peter_Chen.pdf",
+    },
+    {
+      categoria: "Fase 1 · Análisis EER",
+      titulo: "04. Análisis de Aplicabilidad del Modelo EER Extendido",
+      descripcion: "Evaluación formal de candidatos a especialización/herencia y justificación de uso de catálogos y discriminadores en 3FN.",
+      src: "/04_Modelo_ER_Extendido.pdf",
+    },
+    {
+      categoria: "Fase 1 · Conceptual",
+      titulo: "05. Modelo Entidad-Relación en Notación Barker / Crow's Foot",
+      descripcion: "Representación del modelo conceptual de 12 entidades y 17 relaciones generada en Oracle SQL Developer Data Modeler.",
+      src: "/05_Modelo_ER_Crows_Foot.pdf",
+    },
+    {
+      categoria: "Fase 1 · Lógico 3FN",
+      titulo: "06. Modelo Relacional en 3FN (Crow's Foot)",
+      descripcion: "Transformación conceptual a relacional, eliminación de 7 dependencias transitivas y definición de las 17 llaves foráneas.",
+      src: "/06_Modelo_Relacional_Crows_Foot.pdf",
+    },
+    {
+      categoria: "Fase 1 · Metadatos",
+      titulo: "07. Diccionario de Datos Verificado en PostgreSQL",
+      descripcion: "Especificación de las 12 tablas, tipos de datos, 12 PK, 17 FK, 12 UNIQUE, 15 CHECK, 1 EXCLUDE y 5 índices.",
+      src: "/07_Diccionario_de_Datos.pdf",
+    },
+    {
+      categoria: "Fase 1 · Consultas",
+      titulo: "08. Sentencias de Álgebra Relacional y Equivalentes SQL (51 Consultas)",
+      descripcion: "51 consultas formales con operadores σ, π, ρ, ⋈, ∪, ∩, −, γ y ÷ verificadas contra la base de datos.",
+      src: "/08_Algebra_Relacional.pdf",
+    },
+    {
+      categoria: "Fase 2 · Arquitectura SO",
+      titulo: "09. Análisis de Selección del Sistema Operativo (Ubuntu Server 26.04 LTS)",
+      descripcion: "Evaluación técnica, de licenciamiento (TCO), soporte LTS y mantenimiento entre 6 distribuciones Linux empresariales.",
+      src: "/01_Analisis_Seleccion_Sistema_Operativo.pdf",
+    },
+    {
+      categoria: "Fase 2 · Arquitectura BD",
+      titulo: "10. Análisis de Selección del RDBMS (PostgreSQL vs. MySQL, MariaDB y Oracle)",
+      descripcion: "Estudio comparativo de concurrencia MVCC, precisión NUMERIC(20,2), triggers diferibles y escalabilidad sin topes de licencia.",
+      src: "/03_Analisis_Seleccion_RDBMS-2.pdf",
     },
   ],
   conclusionMd:
-    "El desarrollo del proyecto permitió conectar todas las etapas del ciclo de vida de una base de datos relacional: desde abstraer la realidad del negocio en un diagrama MER sin ambigüedades, hasta garantizar cero redundancia mediante normalización formal e implementarlo en SQL.",
+    "El proyecto demostró cómo un **modelo relacional estrictamente normalizado en 3FN** elimina de raíz los descuadres y anomalías de las hojas de cálculo en las pymes: ningún saldo se guarda precalculado, la **partida doble (`Σ debe = Σ haber`)** y el **no traslape de periodos (`EXCLUDE USING gist`)** se blindan con reglas formales, y el aislamiento en tres capas sobre **Ubuntu Server + PostgreSQL** garantiza seguridad, trazabilidad y precisión financiera (`Activo = Pasivo + Patrimonio` con diferencia 0 en todas las empresas de prueba).",
 };

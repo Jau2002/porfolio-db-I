@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 540" width="100%" height="100%">
+  <defs>
+    <pattern id="grid-az" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#182131" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1160" height="540" fill="#0d1320"/>
+  <rect width="1160" height="540" fill="url(#grid-az)"/>
+
+  <text x="40" y="42" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="15">ARQUITECTURA DE TRES CAPAS EN MICROSOFT AZURE · VNET 10.0.0.0/16 · UBUNTU SERVER 26.04 LTS</text>
+
+  <!-- Outer VNet container -->
+  <rect x="40" y="70" width="1080" height="430" rx="12" fill="none" stroke="#232c3f" stroke-width="2" stroke-dasharray="8,6"/>
+  <text x="65" y="100" fill="#8891a7" font-family="monospace" font-size="13"> Grupo de recursos: rg-contable (West US 3) · Red virtual: vnet-main (10.0.0.0/16) · DNS privado: corp.internal</text>
+
+  <!-- Tier 1: snet-web -->
+  <g transform="translate(75, 135)">
+    <rect width="290" height="325" rx="10" fill="#121826" stroke="#5eead4" stroke-width="2"/>
+    <rect width="290" height="40" rx="10" fill="#182131"/>
+    <text x="145" y="25" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="14" text-anchor="middle">1. Capa Web · snet-web</text>
+    <text x="145" y="70" fill="#edeff4" font-family="sans-serif" font-weight="bold" font-size="16" text-anchor="middle">vm-web (10.0.1.4)</text>
+    <text x="145" y="95" fill="#8891a7" font-family="monospace" font-size="12" text-anchor="middle">Ubuntu Server 26.04 LTS</text>
+
+    <rect x="25" y="120" width="240" height="90" rx="7" fill="#0d1320" stroke="#232c3f"/>
+    <text x="145" y="150" fill="#f2b84b" font-family="monospace" font-weight="bold" font-size="13" text-anchor="middle">Nginx + Angular SPA</text>
+    <text x="145" y="172" fill="#edeff4" font-family="monospace" font-size="12" text-anchor="middle">Sirve UI estática y proxy</text>
+    <text x="145" y="192" fill="#8891a7" font-family="monospace" font-size="11" text-anchor="middle">Reenvía /api/v1 → vm-api:8000</text>
+
+    <text x="145" y="250" fill="#5eead4" font-family="monospace" font-size="12" text-anchor="middle">Exposición: IP Pública (80/443)</text>
+    <text x="145" y="275" fill="#8891a7" font-family="monospace" font-size="11" text-anchor="middle">NSG: nsg-web · UFW + fail2ban</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <g stroke="#5eead4" stroke-width="2.2" fill="none">
+    <line x1="365" y1="295" x2="435" y2="295"/>
+    <polygon points="435,295 425,289 425,301" fill="#5eead4"/>
+  </g>
+  <text x="400" y="280" fill="#5eead4" font-family="monospace" font-size="11" text-anchor="middle">HTTP :8000</text>
+
+  <!-- Tier 2: snet-app -->
+  <g transform="translate(435, 135)">
+    <rect width="290" height="325" rx="10" fill="#121826" stroke="#5eead4" stroke-width="2"/>
+    <rect width="290" height="40" rx="10" fill="#182131"/>
+    <text x="145" y="25" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="14" text-anchor="middle">2. Capa Lógica · snet-app</text>
+    <text x="145" y="70" fill="#edeff4" font-family="sans-serif" font-weight="bold" font-size="16" text-anchor="middle">vm-api (10.0.2.4)</text>
+    <text x="145" y="95" fill="#8891a7" font-family="monospace" font-size="12" text-anchor="middle">Ubuntu Server 26.04 LTS</text>
+
+    <rect x="25" y="120" width="240" height="90" rx="7" fill="#0d1320" stroke="#232c3f"/>
+    <text x="145" y="150" fill="#f2b84b" font-family="monospace" font-weight="bold" font-size="13" text-anchor="middle">FastAPI + Uvicorn</text>
+    <text x="145" y="172" fill="#edeff4" font-family="monospace" font-size="12" text-anchor="middle">Pool asíncrono psycopg 3</text>
+    <text x="145" y="192" fill="#8891a7" font-family="monospace" font-size="11" text-anchor="middle">Valida partida doble y reglas</text>
+
+    <text x="145" y="250" fill="#f2b84b" font-family="monospace" font-size="12" text-anchor="middle">Sin IP Pública (Red Privada)</text>
+    <text x="145" y="275" fill="#8891a7" font-family="monospace" font-size="11" text-anchor="middle">NSG: nsg-app (Solo desde vm-web)</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <g stroke="#f2b84b" stroke-width="2.2" fill="none">
+    <line x1="725" y1="295" x2="795" y2="295"/>
+    <polygon points="795,295 785,289 785,301" fill="#f2b84b"/>
+  </g>
+  <text x="760" y="280" fill="#f2b84b" font-family="monospace" font-size="11" text-anchor="middle">TLS :5432</text>
+
+  <!-- Tier 3: snet-data -->
+  <g transform="translate(795, 135)">
+    <rect width="290" height="325" rx="10" fill="#121826" stroke="#f2b84b" stroke-width="2.2"/>
+    <rect width="290" height="40" rx="10" fill="#182131"/>
+    <text x="145" y="25" fill="#f2b84b" font-family="monospace" font-weight="bold" font-size="14" text-anchor="middle">3. Capa Datos · snet-data</text>
+    <text x="145" y="70" fill="#edeff4" font-family="sans-serif" font-weight="bold" font-size="16" text-anchor="middle">vm-db (10.0.3.4)</text>
+    <text x="145" y="95" fill="#8891a7" font-family="monospace" font-size="12" text-anchor="middle">Ubuntu Server 26.04 LTS</text>
+
+    <rect x="25" y="120" width="240" height="90" rx="7" fill="#0d1320" stroke="#232c3f"/>
+    <text x="145" y="150" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13" text-anchor="middle">PostgreSQL 16/17</text>
+    <text x="145" y="172" fill="#edeff4" font-family="monospace" font-size="12" text-anchor="middle">contabilidad_db (12 tablas 3FN)</text>
+    <text x="145" y="192" fill="#8891a7" font-family="monospace" font-size="11" text-anchor="middle">SCRAM-SHA-256 + TLS interno</text>
+
+    <text x="145" y="250" fill="#f2b84b" font-family="monospace" font-size="12" text-anchor="middle">Sin IP Pública (Aislada)</text>
+    <text x="145" y="275" fill="#8891a7" font-family="monospace" font-size="11" text-anchor="middle">NSG: nsg-data (Solo desde vm-api)</text>
+  </g>
+</svg>

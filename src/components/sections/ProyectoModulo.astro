@@ -24,66 +24,34 @@ const withBase = (path?: string) => {
       </div>
     </header>
 
-    {/* Explicación y documentación en Markdown */}
+    {/* 1. Síntesis ejecutiva en Markdown */}
     <div class="proy-explicacion">
       <MarkdownBox content={proyecto.explicacionMd} />
     </div>
 
-    {/* Documentos PDF descargables */}
-    {
-      proyecto.documentosPdf && proyecto.documentosPdf.length > 0 && (
-        <div class="proy-docs">
-          <h5 class="proy-section-label">Documentación y Entregables (PDF)</h5>
-          <div class="proy-docs__grid">
-            {proyecto.documentosPdf.map((doc) => (
-              <div class="proy-doc-item">
-                <div class="proy-doc-item__info">
-                  <span class="proy-doc-item__title">{doc.titulo}</span>
-                  <p class="proy-doc-item__desc">{doc.descripcion}</p>
-                </div>
-                <a
-                  href={withBase(doc.src)}
-                  download
-                  class="proy-doc-item__btn"
-                  aria-label={`Descargar ${doc.titulo}`}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <path d="M12 18v-6"/>
-                    <path d="m9 15 3 3 3-3"/>
-                  </svg>
-                  <span>PDF</span>
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
-      )
-    }
-
-    {/* Galería de imágenes del proyecto */}
+    {/* 2. Diagramas ilustrativos de Arquitectura y Modelos */}
     {
       proyecto.imagenes && proyecto.imagenes.length > 0 && (
         <div class="proy-galeria">
-          <h5 class="proy-section-label">Vistas y Diagramas del Proyecto</h5>
+          <h5 class="proy-section-label">Diagramas de Modelo y Arquitectura</h5>
           <div class="proy-galeria__list">
             {proyecto.imagenes.map((img) => (
               <figure class="proy-figure">
                 <div class="proy-figure__canvas">
                   <img src={withBase(img.src)} alt={img.titulo} loading="lazy" />
                   <a
-                    href={withBase(img.src)}
-                    download
+                    href={withBase(img.pdfSrc ?? img.src)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     class="proy-figure__download"
-                    title="Descargar imagen"
+                    title="Abrir documento PDF del diagrama"
                   >
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                       <polyline points="7 10 12 15 17 10"/>
                       <line x1="12" x2="12" y1="15" y2="3"/>
                     </svg>
-                    <span>Descargar</span>
+                    <span>Ver / Descargar PDF</span>
                   </a>
                 </div>
                 <figcaption class="proy-figure__caption">
@@ -96,7 +64,97 @@ const withBase = (path?: string) => {
       )
     }
 
-    {/* Apartado final: Conclusiones / Qué se aprendió */}
+    {/* 3. Tablas de Síntesis (Esquema 3FN, Decisiones de Análisis SO/RDBMS y Álgebra Relacional) */}
+    {
+      proyecto.tablas && proyecto.tablas.length > 0 && (
+        <div class="proy-tables">
+          <h5 class="proy-section-label">Tablas Resumen de Diseño, Análisis y Consultas</h5>
+          <div class="proy-tables__group">
+            {proyecto.tablas.map((tabla) => (
+              <div class="proy-table-block">
+                <div class="proy-table-block__head">
+                  <h6 class="proy-table-block__title">{tabla.titulo}</h6>
+                  {tabla.subtitulo && (
+                    <span class="proy-table-block__sub">{tabla.subtitulo}</span>
+                  )}
+                </div>
+
+                <div class="proy-table-wrap">
+                  <table class="proy-table">
+                    <thead>
+                      <tr>
+                        {tabla.columnas.map((col) => (
+                          <th>{col}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tabla.filas.map((fila) => (
+                        <tr>
+                          {fila.map((celda, colIdx) => (
+                            <td class={colIdx === 0 ? 'proy-table__primary-col' : ''}>
+                              {celda}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {/* 4. Documentación de Análisis y Diseño (PDFs para ver a detalle o descargar) */}
+    {
+      proyecto.documentosPdf && proyecto.documentosPdf.length > 0 && (
+        <div class="proy-docs">
+          <h5 class="proy-section-label">Documentación de Análisis, Modelos y Diseño (Ver / Descargar en Detalle)</h5>
+          <div class="proy-docs__grid">
+            {proyecto.documentosPdf.map((doc) => (
+              <div class="proy-doc-item">
+                <div class="proy-doc-item__info">
+                  {doc.categoria && <span class="proy-doc-item__cat">{doc.categoria}</span>}
+                  <span class="proy-doc-item__title">{doc.titulo}</span>
+                  <p class="proy-doc-item__desc">{doc.descripcion}</p>
+                </div>
+                <div class="proy-doc-item__actions">
+                  <a
+                    href={withBase(doc.src)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="proy-doc-item__btn proy-doc-item__btn--view"
+                    aria-label={`Ver ${doc.titulo}`}
+                    title="Abrir PDF en pestaña nueva"
+                  >
+                    Ver
+                  </a>
+                  <a
+                    href={withBase(doc.src)}
+                    download
+                    class="proy-doc-item__btn"
+                    aria-label={`Descargar ${doc.titulo}`}
+                    title="Descargar PDF"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" x2="12" y1="15" y2="3"/>
+                    </svg>
+                    <span>PDF</span>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {/* 5. Apartado final: Conclusiones / Qué se aprendió */}
     {proyecto.conclusionMd && (
       <footer class="proy-conclusion">
         <div class="proy-conclusion__head">
@@ -128,7 +186,7 @@ const withBase = (path?: string) => {
     padding: clamp(1.25rem, 3vw, 2rem);
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.85rem;
   }
 
   .proy-card__header {
@@ -159,70 +217,19 @@ const withBase = (path?: string) => {
   }
 
   .proy-section-label {
-    margin: 0 0 0.85rem 0;
+    margin: 0 0 1rem 0;
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--accent-cyan);
   }
 
-  .proy-docs__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-
-  .proy-doc-item {
-    background: var(--bg-deep);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 1.1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  .proy-doc-item__title {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--text-primary);
-  }
-
-  .proy-doc-item__desc {
-    margin: 0.3rem 0 0 0;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
-
-  .proy-doc-item__btn {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.55rem 0.95rem;
-    border-radius: 8px;
-    border: 1px solid rgba(94, 234, 212, 0.45);
-    background: rgba(94, 234, 212, 0.08);
-    color: var(--accent-cyan);
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    text-decoration: none;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-
-  .proy-doc-item__btn:hover {
-    background: var(--accent-cyan);
-    color: var(--bg-deep);
-  }
-
+  /* Diagramas ilustrativos */
   .proy-galeria__list {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   .proy-figure {
@@ -234,10 +241,10 @@ const withBase = (path?: string) => {
 
   .proy-figure__canvas {
     position: relative;
-    background: #f8fafc;
+    background: #0d1320;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: clamp(1rem, 2.5vw, 1.75rem);
+    border-radius: 12px;
+    padding: clamp(0.75rem, 2vw, 1.25rem);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -245,8 +252,8 @@ const withBase = (path?: string) => {
   }
 
   .proy-figure__canvas img {
-    max-width: 100%;
-    max-height: 460px;
+    width: 100%;
+    max-height: 500px;
     object-fit: contain;
     display: block;
   }
@@ -258,10 +265,11 @@ const withBase = (path?: string) => {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
-    padding: 0.55rem 0.95rem;
+    padding: 0.55rem 1rem;
     border-radius: 8px;
-    border: 1px solid rgba(94, 234, 212, 0.5);
-    background: rgba(10, 14, 23, 0.88);
+    border: 1px solid rgba(94, 234, 212, 0.55);
+    background: rgba(10, 14, 23, 0.9);
+    backdrop-filter: blur(8px);
     color: var(--text-primary);
     font-family: var(--font-mono);
     font-size: 0.78rem;
@@ -281,6 +289,178 @@ const withBase = (path?: string) => {
 
   .proy-figure__caption strong {
     color: var(--text-primary);
+  }
+
+  /* Tablas resumen */
+  .proy-tables__group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: var(--bg-deep);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: clamp(1rem, 2.2vw, 1.5rem);
+  }
+
+  .proy-table-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .proy-table-block__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .proy-table-block__title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+  }
+
+  .proy-table-block__sub {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .proy-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-elevated);
+  }
+
+  .proy-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+
+  .proy-table th {
+    background: var(--bg-elevated-2);
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.65rem 0.95rem;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  .proy-table td {
+    padding: 0.65rem 0.95rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+
+  .proy-table td.proy-table__primary-col {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .proy-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Grid de Documentos PDF */
+  .proy-docs__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 1rem;
+  }
+
+  .proy-doc-item {
+    background: var(--bg-deep);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .proy-doc-item:hover {
+    border-color: rgba(94, 234, 212, 0.4);
+  }
+
+  .proy-doc-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .proy-doc-item__cat {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent-warm);
+  }
+
+  .proy-doc-item__title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--text-primary);
+  }
+
+  .proy-doc-item__desc {
+    margin: 0;
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .proy-doc-item__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .proy-doc-item__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 7px;
+    border: 1px solid rgba(94, 234, 212, 0.45);
+    background: rgba(94, 234, 212, 0.08);
+    color: var(--accent-cyan);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .proy-doc-item__btn--view {
+    border-color: var(--line);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+
+  .proy-doc-item__btn:hover {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: var(--bg-deep);
   }
 
   .proy-conclusion {

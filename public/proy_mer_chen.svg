@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 660" width="100%" height="100%">
+  <defs>
+    <pattern id="grid-chen" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#182131" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1160" height="660" fill="#0d1320"/>
+  <rect width="1160" height="660" fill="url(#grid-chen)"/>
+
+  <!-- Title bar -->
+  <text x="40" y="42" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="15">MODELO ENTIDAD-RELACIÓN · NOTACIÓN PETER CHEN (12 ENTIDADES Y 17 RELACIONES)</text>
+
+  <!-- Lines connecting entities and diamonds -->
+  <g stroke="#5eead4" stroke-width="1.8" fill="none">
+    <!-- MONEDA -> Usar -> EMPRESA -->
+    <line x1="150" y1="130" x2="270" y2="130"/>
+    <line x1="350" y1="130" x2="470" y2="130"/>
+    <!-- EMPRESA -> Tener -> PERIODO_CONTABLE -->
+    <line x1="540" y1="160" x2="540" y2="225"/>
+    <line x1="540" y1="285" x2="540" y2="345"/>
+    <!-- PERIODO_CONTABLE -> Cerrar -> CIERRE_PERIODO -->
+    <line x1="460" y1="375" x2="355" y2="375"/>
+    <line x1="275" y1="375" x2="180" y2="375"/>
+    <!-- PERIODO_CONTABLE -> Contener -> ASIENTO -->
+    <line x1="540" y1="405" x2="540" y2="465"/>
+    <line x1="540" y1="525" x2="540" y2="570"/>
+    <!-- TIPO_ASIENTO -> Clasificar -> ASIENTO -->
+    <line x1="180" y1="595" x2="275" y2="595"/>
+    <line x1="355" y1="595" x2="470" y2="595"/>
+    <!-- ASIENTO -> Detallar -> MOVIMIENTO -->
+    <line x1="610" y1="595" x2="710" y2="595"/>
+    <line x1="790" y1="595" x2="880" y2="595"/>
+    <!-- PLAN_CUENTA -> Afectar -> MOVIMIENTO -->
+    <line x1="955" y1="405" x2="955" y2="465"/>
+    <line x1="955" y1="525" x2="955" y2="565"/>
+    <!-- EMPRESA -> Definir -> PLAN_CUENTA -->
+    <line x1="610" y1="130" x2="730" y2="130"/>
+    <line x1="810" y1="130" x2="955" y2="130"/>
+    <line x1="955" y1="130" x2="955" y2="345"/>
+    <!-- TIPO_CUENTA & RUBRO_ESTADO -> PLAN_CUENTA -->
+    <line x1="765" y1="265" x2="955" y2="355"/>
+    <line x1="765" y1="375" x2="880" y2="375"/>
+    <!-- TERCERO & CENTRO_COSTO -> MOVIMIENTO -->
+    <line x1="765" y1="485" x2="895" y2="575"/>
+  </g>
+
+  <!-- Recursive loop on PLAN_CUENTA -->
+  <path d="M 1030 360 C 1110 340, 1110 415, 1030 390" stroke="#f2b84b" stroke-width="1.8" fill="none"/>
+  <text x="1095" y="380" fill="#f2b84b" font-family="monospace" font-size="11" text-anchor="middle">Padre/Hija (1:N)</text>
+
+  <!-- Entities (Rectangles) -->
+  <g fill="#121826" stroke="#5eead4" stroke-width="2">
+    <rect x="40" y="102" width="110" height="54" rx="6"/>
+    <rect x="470" y="102" width="140" height="54" rx="6"/>
+    <rect x="460" y="345" width="160" height="56" rx="6"/>
+    <rect x="40" y="345" width="140" height="56" rx="6"/>
+    <rect x="40" y="568" width="140" height="54" rx="6"/>
+    <rect x="470" y="568" width="140" height="54" rx="6"/>
+    <rect x="880" y="565" width="150" height="58" rx="6" stroke="#f2b84b"/>
+    <rect x="880" y="345" width="150" height="58" rx="6"/>
+    <rect x="635" y="235" width="130" height="52" rx="6"/>
+    <rect x="635" y="348" width="130" height="52" rx="6"/>
+    <rect x="635" y="458" width="130" height="52" rx="6"/>
+  </g>
+
+  <!-- Diamonds (Relationships) -->
+  <g fill="#182131" stroke="#f2b84b" stroke-width="1.8">
+    <polygon points="310,104 350,130 310,156 270,130"/>
+    <polygon points="540,225 585,255 540,285 495,255"/>
+    <polygon points="315,348 355,375 315,402 275,375"/>
+    <polygon points="540,465 585,495 540,525 495,495"/>
+    <polygon points="315,568 355,595 315,622 275,595"/>
+    <polygon points="750,568 790,595 750,622 710,595"/>
+    <polygon points="955,465 1000,495 955,525 910,495"/>
+    <polygon points="770,104 810,130 770,156 730,130"/>
+  </g>
+
+  <!-- Entity Labels -->
+  <g fill="#edeff4" font-family="monospace" font-weight="bold" font-size="13" text-anchor="middle">
+    <text x="95" y="134">MONEDA</text>
+    <text x="540" y="134">EMPRESA</text>
+    <text x="540" y="377">PERIODO_CONTABLE</text>
+    <text x="110" y="377">CIERRE_PERIODO</text>
+    <text x="110" y="599">TIPO_ASIENTO</text>
+    <text x="540" y="599">ASIENTO</text>
+    <text x="955" y="592" fill="#f2b84b">MOVIMIENTO</text>
+    <text x="955" y="610" fill="#8891a7" font-size="11">(debe, haber)</text>
+    <text x="955" y="377">PLAN_CUENTA</text>
+    <text x="700" y="265">TIPO_CUENTA</text>
+    <text x="700" y="378">RUBRO_ESTADO</text>
+    <text x="700" y="482">TERCERO /</text>
+    <text x="700" y="497">CENTRO_COSTO</text>
+  </g>
+
+  <!-- Diamond Labels -->
+  <g fill="#f2b84b" font-family="monospace" font-size="11" text-anchor="middle">
+    <text x="310" y="134">Usar (1:N)</text>
+    <text x="540" y="259">Tener (1:N)</text>
+    <text x="315" y="379">Cerrar (1:1)</text>
+    <text x="540" y="499">Contener</text>
+    <text x="315" y="599">Clasificar</text>
+    <text x="750" y="599">Detallar</text>
+    <text x="955" y="499">Afectar</text>
+    <text x="770" y="134">Definir</text>
+  </g>
+</svg>

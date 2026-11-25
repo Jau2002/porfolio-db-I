@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 660" width="100%" height="100%">
+  <defs>
+    <pattern id="grid-rel" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#182131" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1160" height="660" fill="#0d1320"/>
+  <rect width="1160" height="660" fill="url(#grid-rel)"/>
+
+  <text x="40" y="42" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="15">ESQUEMA RELACIONAL EN 3FN · CROW'S FOOT (12 TABLAS · 17 LLAVES FORÁNEAS · NUMERIC(20,2))</text>
+
+  <!-- FK Lines -->
+  <g stroke="#5eead4" stroke-width="1.7" fill="none">
+    <path d="M 250 130 L 320 130"/>
+    <path d="M 550 130 L 630 130"/>
+    <path d="M 435 205 L 435 270"/>
+    <path d="M 435 415 L 435 475"/>
+    <path d="M 550 545 L 630 545"/>
+    <path d="M 745 415 L 745 475"/>
+    <path d="M 860 330 L 920 330"/>
+    <path d="M 860 545 L 920 545"/>
+    <path d="M 320 330 L 250 330"/>
+  </g>
+
+  <!-- Table 1: MONEDA -->
+  <g transform="translate(40, 75)">
+    <rect width="210" height="115" rx="7" fill="#121826" stroke="#232c3f" stroke-width="2"/>
+    <rect width="210" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">moneda</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_moneda     BIGINT</text>
+    <text x="14" y="72" fill="#edeff4" font-family="monospace" font-size="12">UK codigo        VARCHAR(3)</text>
+    <text x="14" y="92" fill="#8891a7" font-family="monospace" font-size="12">   nombre, simbolo</text>
+  </g>
+
+  <!-- Table 2: EMPRESA -->
+  <g transform="translate(320, 75)">
+    <rect width="230" height="130" rx="7" fill="#121826" stroke="#5eead4" stroke-width="2"/>
+    <rect width="230" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">empresa</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_empresa    BIGINT</text>
+    <text x="14" y="72" fill="#edeff4" font-family="monospace" font-size="12">UK nit           VARCHAR(20)</text>
+    <text x="14" y="92" fill="#edeff4" font-family="monospace" font-size="12">   razon_social  VARCHAR(200)</text>
+    <text x="14" y="112" fill="#5eead4" font-family="monospace" font-size="12">FK id_moneda     BIGINT</text>
+  </g>
+
+  <!-- Table 3: PERIODO_CONTABLE -->
+  <g transform="translate(320, 270)">
+    <rect width="230" height="145" rx="7" fill="#121826" stroke="#232c3f" stroke-width="2"/>
+    <rect width="230" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">periodo_contable</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_periodo    BIGINT</text>
+    <text x="14" y="72" fill="#5eead4" font-family="monospace" font-size="12">FK id_empresa    BIGINT</text>
+    <text x="14" y="92" fill="#edeff4" font-family="monospace" font-size="12">   fecha_inicio, fecha_fin</text>
+    <text x="14" y="112" fill="#edeff4" font-family="monospace" font-size="12">   estado (ABIERTO/CERRADO)</text>
+    <text x="14" y="132" fill="#f2b84b" font-family="monospace" font-size="11">EXCLUDE gist (sin traslape)</text>
+  </g>
+
+  <!-- Table 4: CIERRE_PERIODO -->
+  <g transform="translate(40, 270)">
+    <rect width="210" height="135" rx="7" fill="#121826" stroke="#232c3f" stroke-width="2"/>
+    <rect width="210" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">cierre_periodo (1:1)</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_cierre     BIGINT</text>
+    <text x="14" y="72" fill="#5eead4" font-family="monospace" font-size="12">FK,UK id_periodo BIGINT</text>
+    <text x="14" y="92" fill="#5eead4" font-family="monospace" font-size="12">FK,UK id_asiento_cierre</text>
+    <text x="14" y="112" fill="#edeff4" font-family="monospace" font-size="12">   utilidad_neta NUMERIC(20,2)</text>
+  </g>
+
+  <!-- Table 5: ASIENTO & TIPO_ASIENTO -->
+  <g transform="translate(320, 475)">
+    <rect width="230" height="145" rx="7" fill="#121826" stroke="#232c3f" stroke-width="2"/>
+    <rect width="230" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">asiento (+ tipo_asiento)</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_asiento    BIGINT</text>
+    <text x="14" y="72" fill="#5eead4" font-family="monospace" font-size="12">FK id_periodo    BIGINT</text>
+    <text x="14" y="92" fill="#5eead4" font-family="monospace" font-size="12">FK id_tipo_asiento BIGINT</text>
+    <text x="14" y="112" fill="#edeff4" font-family="monospace" font-size="12">   numero, fecha, descripcion</text>
+    <text x="14" y="132" fill="#8891a7" font-family="monospace" font-size="12">   estado (CONTABILIZADO)</text>
+  </g>
+
+  <!-- Table 6: PLAN_CUENTA -->
+  <g transform="translate(630, 75)">
+    <rect width="230" height="175" rx="7" fill="#121826" stroke="#5eead4" stroke-width="2"/>
+    <rect width="230" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">plan_cuenta</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_cuenta     BIGINT</text>
+    <text x="14" y="72" fill="#5eead4" font-family="monospace" font-size="12">FK id_empresa    BIGINT</text>
+    <text x="14" y="92" fill="#5eead4" font-family="monospace" font-size="12">FK id_cuenta_padre BIGINT?</text>
+    <text x="14" y="112" fill="#5eead4" font-family="monospace" font-size="12">FK id_tipo_cuenta, id_rubro</text>
+    <text x="14" y="132" fill="#edeff4" font-family="monospace" font-size="12">UK (id_empresa, codigo)</text>
+    <text x="14" y="152" fill="#8891a7" font-family="monospace" font-size="12">   nivel, acepta_movimiento</text>
+  </g>
+
+  <!-- Table 7: TIPO_CUENTA & RUBRO_ESTADO -->
+  <g transform="translate(920, 75)">
+    <rect width="200" height="175" rx="7" fill="#121826" stroke="#232c3f" stroke-width="2"/>
+    <rect width="200" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">tipo_cuenta / rubro</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_tipo_cuenta</text>
+    <text x="14" y="72" fill="#edeff4" font-family="monospace" font-size="12">   clase, naturaleza</text>
+    <line x1="12" y1="90" x2="188" y2="90" stroke="#232c3f"/>
+    <text x="14" y="112" fill="#f2b84b" font-family="monospace" font-size="12">PK id_rubro</text>
+    <text x="14" y="132" fill="#5eead4" font-family="monospace" font-size="12">FK id_rubro_padre?</text>
+    <text x="14" y="152" fill="#8891a7" font-family="monospace" font-size="12">   estado_financiero</text>
+  </g>
+
+  <!-- Table 8: MOVIMIENTO (Central Fact Table) -->
+  <g transform="translate(630, 475)">
+    <rect width="230" height="155" rx="7" fill="#121826" stroke="#f2b84b" stroke-width="2.2"/>
+    <rect width="230" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#f2b84b" font-family="monospace" font-weight="bold" font-size="13">movimiento (N:M)</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_movimiento BIGINT</text>
+    <text x="14" y="72" fill="#5eead4" font-family="monospace" font-size="12">FK id_asiento, id_cuenta</text>
+    <text x="14" y="92" fill="#5eead4" font-family="monospace" font-size="12">FK id_tercero?, id_centro?</text>
+    <text x="14" y="112" fill="#edeff4" font-family="monospace" font-size="12">   debe  NUMERIC(20,2)</text>
+    <text x="14" y="132" fill="#edeff4" font-family="monospace" font-size="12">   haber NUMERIC(20,2)</text>
+  </g>
+
+  <!-- Table 9: TERCERO & CENTRO_COSTO -->
+  <g transform="translate(920, 475)">
+    <rect width="200" height="155" rx="7" fill="#121826" stroke="#232c3f" stroke-width="2"/>
+    <rect width="200" height="32" rx="7" fill="#182131"/>
+    <text x="14" y="21" fill="#5eead4" font-family="monospace" font-weight="bold" font-size="13">tercero / centro_costo</text>
+    <text x="14" y="52" fill="#f2b84b" font-family="monospace" font-size="12">PK id_tercero</text>
+    <text x="14" y="72" fill="#edeff4" font-family="monospace" font-size="12">   documento, tipo</text>
+    <line x1="12" y1="90" x2="188" y2="90" stroke="#232c3f"/>
+    <text x="14" y="112" fill="#f2b84b" font-family="monospace" font-size="12">PK id_centro_costo</text>
+    <text x="14" y="132" fill="#edeff4" font-family="monospace" font-size="12">   codigo, nombre</text>
+  </g>
+</svg>
