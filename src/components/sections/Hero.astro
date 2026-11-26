@@ -7,6 +7,11 @@ interface Props {
 }
 
 const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.blob.core.windows.net/containerblobs/poster-placeholder.jpg' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const withBase = (path: string) => {
+  if (path.startsWith('http')) return path;
+  return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};
 ---
 
 <section id="presentacion" class="hero">
@@ -23,7 +28,7 @@ const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.b
           preload="metadata"
           poster={posterSrc}
         >
-          <source src={videoSrc} type="video/mp4" />
+          <source src={withBase(videoSrc)} type="video/mp4" />
         </video>
       ) : (
         <div class="hero__video hero__video--fallback" />
@@ -32,7 +37,7 @@ const { videoSrc = SITE_META.videoSrc, posterSrc = 'https://dbportfoliostatics.b
     <div class="hero__overlay"></div>
   </div>
 
-  <img src="/avatar-placeholder.svg" alt="Avatar 8-bit" class="hero__avatar" />
+  <img src={withBase('/avatar.png')} alt="Avatar 8-bit Jaume Suarez" class="hero__avatar" />
 
   <div class="wrap hero__content">
     <p class="eyebrow">Presentación</p>
